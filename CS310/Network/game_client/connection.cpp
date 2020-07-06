@@ -87,6 +87,25 @@ namespace GamesAcademy
 			default:
 				break;
 			}
+
+			m_lastReceiveTime = gameTime;
+		}
+
+		if( m_state > ConnectionState::Connecting &&
+			gameTime - m_lastReceiveTime > 10.0 )
+		{
+			m_state		= ConnectionState::Invalid;
+			m_playerId	= 0xff;
+		}
+		else if( m_state == ConnectionState::Connecting &&
+			gameTime - m_lastReceiveTime > 0.5 )
+		{
+			char buffer[ 2048u ];
+			MessageLoginRequest* pLoginRequest = (MessageLoginRequest*)buffer;
+			pLoginRequest->usernameLength = uint16( m_username.size() );
+			memcpy( pLoginRequest->username, m_username.c_str(), pLoginRequest->usernameLength );
+
+			sendMessage( MessageType::LoginRequest, pLoginRequest, sizeof( *pLoginRequest ) + pLoginRequest->usernameLength );
 		}
 
 		if( m_state == ConnectionState::Playing &&
@@ -99,12 +118,9 @@ namespace GamesAcademy
 
 	void Connection::login( const char* pUsername )
 	{
-		char buffer[ 2048u ];
-		MessageLoginRequest* pLoginRequest = (MessageLoginRequest*)buffer;
-		pLoginRequest->usernameLength = uint16( strlen( pUsername ) );
-		memcpy( pLoginRequest->username, pUsername, pLoginRequest->usernameLength );
-
-		sendMessage( MessageType::LoginRequest, pLoginRequest, sizeof( *pLoginRequest ) + pLoginRequest->usernameLength );
+		m_username			= pUsername;
+		m_state				= ConnectionState::Connecting;
+		m_lastReceiveTime	= -10.0f;
 	}
 
 	void Connection::action( MessagePlayerActionType action )

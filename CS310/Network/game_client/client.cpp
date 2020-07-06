@@ -173,6 +173,8 @@ namespace GamesAcademy
 		if( m_connection.getState() != ConnectionState::Playing )
 		{
 			m_graphics.drawText( 50.0f, 50.0f, 24.0f, m_font, "Connecting...", 0xffffffffu );
+			m_graphics.endFrame();
+			return;
 		}
 
 		m_minSize		= min( m_graphics.getBackBufferWidth(), m_graphics.getBackBufferHeight() );

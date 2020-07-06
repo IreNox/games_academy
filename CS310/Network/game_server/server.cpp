@@ -158,8 +158,6 @@ namespace GamesAcademy
 				break;
 			}
 
-			printf( "Received packet from %08x with %d bytes.\n", clientAddress.sin_addr.s_addr, packetSize );
-
 			if( packetSize < sizeof( MessageHeader ) )
 			{
 				printf( "Received packet from %08x is too small(%d bytes)\n", clientAddress.sin_addr.s_addr, packetSize );

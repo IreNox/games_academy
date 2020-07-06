@@ -3,6 +3,7 @@
 #include "message_types.h"
 
 #include <WinSock2.h>
+#include <string>
 
 namespace GamesAcademy
 {
@@ -37,7 +38,10 @@ namespace GamesAcademy
 		sockaddr_in				m_serverAddress;
 
 		ConnectionState			m_state				= ConnectionState::Invalid;
+		double					m_lastReceiveTime	= 0.0;
 		double					m_lastPingTime		= 0.0;
+
+		std::string				m_username;
 		uint8					m_playerId			= 0xffu;
 		MessageGameState		m_gameState;
 
