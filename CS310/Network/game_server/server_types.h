@@ -81,7 +81,8 @@ namespace GamesAcademy
 		ShootUpLeft,
 		ShootUpRight,
 		ShootDownLeft,
-		ShootDownRight
+		ShootDownRight,
+		Count
 	};
 
 	struct MessagePlayerAction

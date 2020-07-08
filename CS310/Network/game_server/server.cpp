@@ -247,7 +247,13 @@ namespace GamesAcademy
 
 		if( pPlayerAction->round != client.round )
 		{
-			printf( "Received player action for wrong round(%d != %d).\n", client.address.sin_addr.s_addr, pPlayerAction->round, client.round );
+			//printf( "Received player action for wrong round(%d != %d) from %08x.\n", pPlayerAction->round, client.round, client.address.sin_addr.s_addr );
+			return;
+		}
+
+		if( pPlayerAction->action >= MessagePlayerActionType::Count )
+		{
+			printf( "Received invalid player action(%d) from %08x.\n", pPlayerAction->action, client.address.sin_addr.s_addr );
 			return;
 		}
 
@@ -257,7 +263,7 @@ namespace GamesAcademy
 
 	void Server::sendGameState()
 	{
-		MessageGameState gameState;
+		MessageGameState gameState = {};
 		gameState.round = m_round;
 
 		uint8 i = 0u;
@@ -331,6 +337,9 @@ namespace GamesAcademy
 		int shootY = 0;
 		switch( client.action.action )
 		{
+		case MessagePlayerActionType::Invalid:
+			break;
+
 		case MessagePlayerActionType::MoveUp:
 			moveY = -1;
 			break;
