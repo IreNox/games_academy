@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="LinkedList">
+		<DisplayString>{{ nodes }}</DisplayString>
+		<Expand>
+			<CustomListItems>
+				<Variable Name="pItem" InitialValue="head"/>
+				<Loop>
+					<Break Condition="pItem == nullptr"/>
+					<Item>*pItem</Item>
+					<Exec>pItem = pItem-&gt;next</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="Node">
+		<DisplayString>{{ val={val} }}</DisplayString>
+	</Type>
+</AutoVisualizer>
