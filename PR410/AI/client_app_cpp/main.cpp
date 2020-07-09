@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-uint8_t doAction( const GameState* pGameState, void* pUserData )
+uint8_t doAction( const GameState* pGameState, uint8_t myPlayerId, void* pUserData )
 {
 	//return pGameState->round % (PlayerActionType_ShootDownRight + 1);
 	return PlayerActionType_Invalid;

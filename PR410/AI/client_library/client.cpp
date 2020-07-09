@@ -94,15 +94,14 @@ namespace GamesAcademy
 			pPlayer = &gameState.players[ i ];
 		}
 
-		if( pPlayer == nullptr
-			 )
+		if( pPlayer == nullptr )
 		{
 			return;
 		}
 
 		if( gameState.round != m_lastRound )
 		{
-			m_lastAction	= m_pCallback( (const GameState*)&gameState, m_pUserData );
+			m_lastAction	= m_pCallback( (const GameState*)&gameState, pPlayer->playerId, m_pUserData );
 			m_lastRound		= gameState.round;
 		}
 

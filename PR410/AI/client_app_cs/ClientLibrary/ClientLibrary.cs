@@ -7,14 +7,14 @@ namespace client_app_cs
 
 	class ClientLibrary
 	{
-		private delegate byte DoActionNativeDelegate(IntPtr gameState, IntPtr userData);
+		private delegate byte DoActionNativeDelegate(IntPtr gameState, byte myPlayerId, IntPtr userData);
 
 		[DllImport("client_library.dll", EntryPoint = "runClient")]
 		private static extern void runClient( [param: MarshalAs(UnmanagedType.LPStr)] string username, IntPtr callback, IntPtr userData);
 
 		public static void run( String username, DoActionDelegate callback )
 		{
-			DoActionNativeDelegate managedCallback = delegate(IntPtr gameStatePtr, IntPtr userData) {
+			DoActionNativeDelegate managedCallback = delegate(IntPtr gameStatePtr, byte myPlayerId, IntPtr userData) {
 				GameState gameState = Marshal.PtrToStructure<GameState>(gameStatePtr);
 				return (byte)callback(gameState);
 			};
