@@ -53,6 +53,13 @@ namespace GamesAcademy
 		uint8					positionY;
 	};
 
+	struct MessagePlayerStats
+	{
+		char					name;
+		uint16					deads;
+		uint16					kills;
+	};
+
 	struct MessageShootState
 	{
 		uint8					playerId;
@@ -69,6 +76,7 @@ namespace GamesAcademy
 		uint8					playerCount;
 		MessageShootState		shoots[ 8u ];
 		uint8					shootCount;
+		MessagePlayerStats		playerStats[ 8u ];
 	};
 
 	enum class MessagePlayerActionType : uint8

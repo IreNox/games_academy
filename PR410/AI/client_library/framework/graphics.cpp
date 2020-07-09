@@ -186,12 +186,20 @@ namespace GamesAcademy
 		const float sizeFactor = fontSize / font.getSize();
 
 		UINT vertexCount = 0u;
+		int xStart = x;
 		while( *pText )
 		{
 			if( *pText == ' ' )
 			{
 				pText++;
 				x += fontSize / 2.0f;
+				continue;
+			}
+			else if( *pText == '\n' )
+			{
+				pText++;
+				x = xStart;
+				y += fontSize;
 				continue;
 			}
 

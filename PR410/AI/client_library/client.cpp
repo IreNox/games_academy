@@ -145,6 +145,7 @@ namespace GamesAcademy
 		for( uint8 playerIndex = 0u; playerIndex < gameState.playerCount; ++playerIndex )
 		{
 			const MessagePlayerState& player = gameState.players[ playerIndex ];
+			const MessagePlayerStats& stats = gameState.playerStats[ playerIndex ];
 
 			if( player.playerId == m_connection.getPlayerId() )
 			{
@@ -154,12 +155,20 @@ namespace GamesAcademy
 			const float playerX = getCellPosition( player.positionX );
 			const float playerY = getCellPosition( player.positionY );
 
+			const uint32 hash = (player.playerId * 2654435789) ^ 104395301;
+			const uint32 colorMod = hash & 0x00ffffff;
+			const uint32 color = 0xff77cc44u ^ colorMod;
 			m_graphics.drawTriangle(
 				playerX + m_halfSize,		playerY + m_playerBegin,
 				playerX + m_playerEnd,		playerY + m_playerEnd,
 				playerX + m_playerBegin,	playerY + m_playerEnd,
-				0xff77cc44u
+				color
 			);
+
+			char buffer[ 64u ];
+			sprintf_s( buffer, "%c\n%d/%d", stats.name, stats.kills, stats.deads );
+
+			m_graphics.drawText( playerX, playerY, 16, m_font, buffer, color );
 		}
 
 		for( uint8 shootIndex = 0u; shootIndex < gameState.shootCount; ++shootIndex )
