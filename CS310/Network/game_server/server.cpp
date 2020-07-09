@@ -84,6 +84,7 @@ namespace GamesAcademy
 
 		receiveMessages( serverTime );
 
+		bool oneClientDoes = true;
 		bool allClientDone = !m_clients.empty();
 		std::vector< uint32 > clientsToRemove;
 		for( const std::pair< uint32, ClientState >& kvp : m_clients )
@@ -93,10 +94,11 @@ namespace GamesAcademy
 				clientsToRemove.push_back( kvp.first );
 			}
 
+			oneClientDoes |= kvp.second.action.action != MessagePlayerActionType::Invalid;
 			allClientDone &= kvp.second.round == 0xffffffffu;
 		}
 
-		if( allClientDone )
+		if( oneClientDoes && allClientDone )
 		{
 			printf( "Round %d done.\n", m_round );
 
@@ -164,7 +166,7 @@ namespace GamesAcademy
 				continue;
 			}
 
-			const uint32 clientIp = clientAddress.sin_addr.s_addr;
+			const uint32 clientIp = clientAddress.sin_addr.s_addr + clientAddress.sin_port;
 			ClientState& client = m_clients[ clientIp ];
 			client.address			= clientAddress;
 			client.lastMesssageTime	= serverTime;
@@ -198,7 +200,7 @@ namespace GamesAcademy
 			if( client.status != ClientStatus::LoggedIn )
 			{
 				printf( "Client from %08x is not logged in, so remove!\n", clientAddress.sin_addr.s_addr );
-				m_clients.erase( m_clients.find( clientAddress.sin_addr.s_addr ) );
+				m_clients.erase( m_clients.find( clientIp ) );
 			}
 		}
 	}
@@ -270,9 +272,23 @@ namespace GamesAcademy
 		for( const std::pair< uint32, ClientState >& kvp : m_clients )
 		{
 			MessagePlayerState& playerState = gameState.players[ i ];
+			MessagePlayerStats& playerStats = gameState.playerStats[ i ];
+
 			playerState.playerId	= kvp.second.playerId;
 			playerState.positionX	= kvp.second.positionX;
 			playerState.positionY	= kvp.second.positionY;
+
+			if( kvp.second.username.empty() )
+			{
+				playerStats.name = ' ';
+			}
+			else
+			{
+				playerStats.name = kvp.second.username[ 0 ];
+			}
+
+			playerStats.kills = kvp.second.kills;
+			playerStats.deads = kvp.second.deads;
 
 			i++;
 			if( i == 8u )
@@ -385,8 +401,8 @@ namespace GamesAcademy
 		{
 			const uint8 oldPositionX = client.positionX;
 			const uint8 oldPositionY = client.positionY;
-			client.positionX = clamp( client.positionX + moveX, 0, 16 );
-			client.positionY = clamp( client.positionY + moveY, 0, 16 );
+			client.positionX = clamp( client.positionX + moveX, 0, 15 );
+			client.positionY = clamp( client.positionY + moveY, 0, 15 );
 
 			printf( "Move Player %d from (%d, %d) to (%d, %d)\n", client.playerId, oldPositionX, oldPositionY, client.positionX, client.positionY );
 		}
@@ -400,8 +416,7 @@ namespace GamesAcademy
 
 			int positionX = shoot.startPositionX;
 			int positionY = shoot.startPositionY;
-			while( positionX > 0 && positionX < 15 &&
-				positionY > 0 && positionY < 15 )
+			while( true )
 			{
 				for( std::map< uint32, ClientState >::iterator it = m_clients.begin(); it != m_clients.end(); ++it )
 				{
@@ -414,6 +429,14 @@ namespace GamesAcademy
 					}
 
 					target.pKiller = &client;
+				}
+
+				const int nextX = positionX + shootX;
+				const int nextY = positionY + shootY;
+				if( nextX < 0 || nextX > 15 ||
+					nextY < 0 || nextY > 15 )
+				{
+					break;
 				}
 
 				positionX += shootX;
@@ -431,33 +454,37 @@ namespace GamesAcademy
 
 	void Server::killPlayer( ClientState& target, ClientState* pKiller )
 	{
-		const int position = target.playerId % 4u;
-
-		switch( position )
+		bool found = true;
+		while( found )
 		{
-		case 0:
-			target.positionX = 1;
-			target.positionY = 1;
-			break;
+			target.positionX = rand() % 16u;
+			target.positionY = rand() % 16u;
 
-		case 1:
-			target.positionX = 14;
-			target.positionY = 1;
-			break;
+			found = false;
+			for( const std::pair< uint32, ClientState >& kvp : m_clients )
+			{
+				if( kvp.second.playerId == target.playerId )
+				{
+					continue;
+				}
 
-		case 2:
-			target.positionX = 1;
-			target.positionY = 14;
-			break;
+				if( kvp.second.positionX == target.positionX && kvp.second.positionY == target.positionY )
+				{
+					found = true;
+					break;
+				}
 
-		case 3:
-			target.positionX = 14;
-			target.positionY = 14;
-			break;
+				const int distanceX = abs( int( target.positionX ) - kvp.second.positionX );
+				const int distanceY = abs( int( target.positionY ) - kvp.second.positionY );
+				if( distanceX == distanceY )
+				{
+					found = true;
+					break;
+				}
+			}
+		};
 
-		default:
-			break;
-		}
+		target.deads++;
 
 		if( pKiller != nullptr )
 		{

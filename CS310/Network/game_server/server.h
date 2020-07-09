@@ -43,6 +43,7 @@ namespace GamesAcademy
 			ClientState*		pKiller				= nullptr;
 
 			uint16				kills				= 0u;
+			uint16				deads				= 0u;
 		};
 
 		struct ShootState
