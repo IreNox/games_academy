@@ -48,7 +48,7 @@ extern "C"
 		PlayerActionType_ShootDownRight
 	};
 
-	typedef uint8_t(*DoActionCallback)(const GameState* pGameState);
+	typedef uint8_t(*DoActionCallback)(const GameState* pGameState, void* pUserData);
 
-	void GA_DLL runClient( const char* pUsername, DoActionCallback pCallback );
+	void GA_DLL runClient( const char* pUsername, DoActionCallback pCallback, void* pUserData );
 }

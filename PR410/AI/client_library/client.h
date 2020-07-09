@@ -14,7 +14,7 @@ namespace GamesAcademy
 	{
 	public:
 
-		int			run( const char* pUsername, DoActionCallback pCallback );
+		int			run( const char* pUsername, DoActionCallback pCallback, void* pUserData );
 
 	private:
 
@@ -32,6 +32,7 @@ namespace GamesAcademy
 		Connection			m_connection;
 
 		DoActionCallback	m_pCallback			= nullptr;
+		void*				m_pUserData			= nullptr;
 		uint32				m_lastRound			= 0u;
 		uint8				m_lastAction		= 0u;
 

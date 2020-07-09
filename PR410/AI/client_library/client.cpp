@@ -13,9 +13,10 @@ namespace GamesAcademy
 		return T((T( 0 ) < val) - (val < T( 0 )));
 	}
 
-	int Client::run( const char* pUsername, DoActionCallback pCallback )
+	int Client::run( const char* pUsername, DoActionCallback pCallback, void* pUserData )
 	{
 		m_pCallback = pCallback;
+		m_pUserData = pUserData;
 
 		if( !create() )
 		{
@@ -101,7 +102,7 @@ namespace GamesAcademy
 
 		if( gameState.round != m_lastRound )
 		{
-			m_lastAction	= m_pCallback( (const GameState*)&gameState );
+			m_lastAction	= m_pCallback( (const GameState*)&gameState, m_pUserData );
 			m_lastRound		= gameState.round;
 		}
 
