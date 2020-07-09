@@ -4,7 +4,7 @@ namespace client_app_cs
 {
 	static class Program
 	{
-		static PlayerActionType doAction(GameState gameState)
+		static PlayerActionType doAction(GameState gameState, byte myPlayerId)
 		{
 			PlayerActionType action = (PlayerActionType)(gameState.round % ((int)PlayerActionType.ShootDownRight + 1));
 			return action;

@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace client_app_cs
 {
-	public delegate PlayerActionType DoActionDelegate(GameState gameState);
+	public delegate PlayerActionType DoActionDelegate(GameState gameState, byte myPlayerId);
 
 	class ClientLibrary
 	{
@@ -16,7 +16,7 @@ namespace client_app_cs
 		{
 			DoActionNativeDelegate managedCallback = delegate(IntPtr gameStatePtr, byte myPlayerId, IntPtr userData) {
 				GameState gameState = Marshal.PtrToStructure<GameState>(gameStatePtr);
-				return (byte)callback(gameState);
+				return (byte)callback(gameState, myPlayerId);
 			};
 
 			IntPtr nativeCallback = Marshal.GetFunctionPointerForDelegate(managedCallback);
