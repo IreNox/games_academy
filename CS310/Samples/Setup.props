@@ -5,7 +5,6 @@
   <PropertyGroup>
     <OutDir>$(SolutionDir)Binary\$(PlatformTarget)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Build\$(PlatformTarget)\$(Configuration)\$(ProjectName)\</IntDir>
-    <_PropertySheetDisplayName>Setup</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
