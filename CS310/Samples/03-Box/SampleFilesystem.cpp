@@ -180,7 +180,7 @@ namespace GamesAcademy
 		}
 
 		char filenameBuffer[ MaxPathLength ];
-		sprintf_s( filenameBuffer, sizeof( filenameBuffer ), "%s%s", m_basePath, pFilename );
+		sprintf_s( filenameBuffer, "%s%s", m_basePath, pFilename );
 
 		WCHAR wideFilenameBuffer[ MaxPathLength ];
 		MultiByteToWideChar( CP_UTF8, 0, filenameBuffer, -1, wideFilenameBuffer, ARRAY_COUNT( wideFilenameBuffer ) );
@@ -188,7 +188,48 @@ namespace GamesAcademy
 		HANDLE fileHandle = CreateFileW( wideFilenameBuffer, FILE_GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0u, nullptr );
 		if( fileHandle == INVALID_HANDLE_VALUE )
 		{
-			if( GetLastError() == ERROR_SHARING_VIOLATION )
+			if( GetLastError() == ERROR_FILE_NOT_FOUND )
+			{
+				sprintf_s( filenameBuffer, "%s.zip", pFilename );
+
+				const MemoryBlock zipContent = readFile( filenameBuffer );
+				if( zipContent.pData != nullptr )
+				{
+					const char* pName = strrchr( pFilename, '/' );
+					if( pName == nullptr )
+					{
+						pName = pFilename;
+					}
+					else
+					{
+						pName++;
+					}
+
+					mz_zip_archive zip;
+					mz_zip_zero_struct( &zip );
+					mz_zip_reader_init_mem( &zip, zipContent.pData, zipContent.size, 0u );
+
+					mz_uint fileIndex = 0u;
+					if( mz_zip_reader_locate_file_v2( &zip, pName, nullptr, 0u, &fileIndex ) != -1 )
+					{
+						mz_zip_archive_file_stat fileStats;
+						if( mz_zip_reader_file_stat( &zip, fileIndex, &fileStats ) )
+						{
+							void* pData = malloc( (size_t)fileStats.m_uncomp_size );
+							if( mz_zip_reader_extract_to_mem_no_alloc( &zip, fileIndex, pData, (size_t)fileStats.m_uncomp_size, 0u, nullptr, 0u ) )
+							{
+								mz_zip_reader_end( &zip );
+								return { pData, (size_t)fileStats.m_uncomp_size };
+							}
+
+							free( pData );
+						}
+					}
+
+					mz_zip_reader_end( &zip );
+				}
+			}
+			else if( GetLastError() == ERROR_SHARING_VIOLATION )
 			{
 				Sleep( 50u );
 				fileHandle = CreateFileW( wideFilenameBuffer, FILE_GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0u, nullptr );
