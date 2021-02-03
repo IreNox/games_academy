@@ -20,11 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp" />
+    <ClCompile Include="LodePNG\lodepng.cpp" />
+    <ClCompile Include="LodePNG\lodepng_util.cpp" />
     <ClCompile Include="MikkTSpace\mikktspace.c" />
     <ClCompile Include="miniz\miniz.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h" />
+    <ClInclude Include="LodePNG\lodepng.h" />
+    <ClInclude Include="LodePNG\lodepng_util.h" />
     <ClInclude Include="MikkTSpace\mikktspace.h" />
     <ClInclude Include="miniz\miniz.h" />
   </ItemGroup>

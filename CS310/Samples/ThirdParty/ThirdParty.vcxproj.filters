@@ -10,6 +10,9 @@
     <Filter Include="miniz">
       <UniqueIdentifier>{7259dab8-6225-4744-8227-1bb5cf6e89c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LodePNG">
+      <UniqueIdentifier>{d3f5c488-7e55-4ea6-8796-c45f54e2824f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DDSTextureLoader\DDSTextureLoader.cpp">
@@ -21,6 +24,12 @@
     <ClCompile Include="miniz\miniz.c">
       <Filter>miniz</Filter>
     </ClCompile>
+    <ClCompile Include="LodePNG\lodepng.cpp">
+      <Filter>LodePNG</Filter>
+    </ClCompile>
+    <ClCompile Include="LodePNG\lodepng_util.cpp">
+      <Filter>LodePNG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DDSTextureLoader\DDSTextureLoader.h">
@@ -31,6 +40,12 @@
     </ClInclude>
     <ClInclude Include="miniz\miniz.h">
       <Filter>miniz</Filter>
+    </ClInclude>
+    <ClInclude Include="LodePNG\lodepng.h">
+      <Filter>LodePNG</Filter>
+    </ClInclude>
+    <ClInclude Include="LodePNG\lodepng_util.h">
+      <Filter>LodePNG</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
