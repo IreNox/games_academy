@@ -197,8 +197,8 @@ namespace GamesAcademy
 			!m_terrainSandMaterial.createFromFiles( m_device, m_filesystem, "Content/terrain/sand" ) ||
 			!m_terrainGrassMaterial.createFromFiles( m_device, m_filesystem, "Content/terrain/grass" ) ||
 			!m_terrainRockMaterial.createFromFiles( m_device, m_filesystem, "Content/terrain/rock" ) ||
-			!m_terrainHeightMap.createFromFile(m_device, m_filesystem, "Content/terrain/height.dds" ) ||
-			!m_terrainBlendMap.createFromFile(m_device, m_filesystem, "Content/terrain/material_blend.dds") ||
+			!m_terrainHeightMap.createFromFile( m_device, m_filesystem, "Content/terrain/height.dds" ) ||
+			!m_terrainBlendMap.createFromFile( m_device, m_filesystem, "Content/terrain/material_blend.png" ) ||
 			!m_skyboxModel.createFromFile( m_device, m_filesystem, "Content/skybox/skybox.obj" ) ||
 			!m_environmentMap.createFromFile( m_device, m_filesystem, "Content/skybox/skybox_sea.dds" ) )
 		{
@@ -268,6 +268,11 @@ namespace GamesAcademy
 		else if( m_input.wasKeyboardKeyPressed( SampleInputKeyboardKey::F2 ) )
 		{
 			m_tessellationFactor = clamp( 0.0f, 5.0f, m_tessellationFactor + 0.05f );
+		}
+
+		if( m_input.wasKeyboardKeyPressed( SampleInputKeyboardKey::F3 ) )
+		{
+			m_debug = !m_debug;
 		}
 
 		if( m_input.isMouseButtonDown( SampleInputMouseButton::Left ) )
@@ -374,7 +379,7 @@ namespace GamesAcademy
 		{
 			m_hullViewConstants.applyToHullShader( pContext, 0u );
 
-			const size_t shaderMode = (shadowMap ? TERRAIN_MODE_SHADOW : TERRAIN_MODE_DEFAULT);
+			const size_t shaderMode = (shadowMap ? TERRAIN_MODE_SHADOW : (m_debug ? TERRAIN_MODE_DEBUG : TERRAIN_MODE_DEFAULT));
 			m_terrainVertexShader.apply( pContext, shaderMode );
 			m_terrainHullShader.apply( pContext, shaderMode );
 			m_terrainDomainShader.apply( pContext, shaderMode );

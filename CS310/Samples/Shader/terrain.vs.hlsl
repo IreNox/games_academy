@@ -1,4 +1,4 @@
-// TERRAIN_MODE=2
+// TERRAIN_MODE=3
 
 #include "terrain_shader_types.hpp"
 

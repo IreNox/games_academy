@@ -61,6 +61,7 @@ namespace GamesAcademy
 		SampleShaderConstants		m_pixelLightConstants;
 
 		bool						m_wireframe						= false;
+		bool						m_debug							= false;
 		float						m_tessellationFactor			= 1.0f;
 		XMVECTOR					m_lightDirection				= XMVectorZero();
 		float						m_backgroundColor[ 4u ]			= { 0.003922f, 0.396078f, 0.988235f, 1.0f };

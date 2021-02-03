@@ -1,4 +1,4 @@
-// TERRAIN_MODE=2
+// TERRAIN_MODE=3
 
 #include "terrain_shader_types.hpp"
 
@@ -38,6 +38,11 @@ cbuffer c_lightData : register( b0 )
 
 PixelOutput main( DomainOutput input )
 {
+	float3 blend = t_blendMap.SampleLevel( s_clamp_linear, input.uv, 0.0 ).rgb;
+
+#if TERRAIN_MODE == TERRAIN_MODE_DEBUG
+	float3 color = blend;
+#else
 	float3 normal		= normalize( input.normal );
 	float3 tangent		= normalize( input.tangent );
 	float3 binormal		= normalize( input.binormal );
@@ -90,9 +95,9 @@ PixelOutput main( DomainOutput input )
 	float3 color2				= calculatePBR( albedo2, float3( ambient_occlusion2, 0.0, roughness2 ), normal1, getPixelLightDirection( c_light ), getPixelLightCameraPosition( c_light ), input.worldPosition, radiance );
 	float3 color3				= calculatePBR( albedo3, float3( ambient_occlusion3, 0.0, roughness3 ), normal1, getPixelLightDirection( c_light ), getPixelLightCameraPosition( c_light ), input.worldPosition, radiance );
 
-	float3 blend = t_blendMap.SampleLevel( s_clamp_linear, input.uv, 0.0 ).rgb;
 	blend = blend / (blend.x + blend.y + blend.z);
 	float3 color = color1 * blend.x + color2 * blend.y + color3 * blend.z;
+#endif
 
 	PixelOutput output;
 	output.color = float4( color, 1.0 );
