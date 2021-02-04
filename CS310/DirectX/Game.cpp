@@ -76,13 +76,15 @@ namespace GA
 		RECT clientRect;
 		GetClientRect( m_windowHandle, &clientRect );
 
-		m_isOpen = true;
+		m_isOpen	= true;
+		m_width		= (clientRect.right - clientRect.left);
+		m_height	= (clientRect.bottom - clientRect.top);
 
 		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
 		swapChainDesc.BufferCount		= 2u;
 		swapChainDesc.BufferDesc.Format	= DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapChainDesc.BufferDesc.Width	= (clientRect.right - clientRect.left);
-		swapChainDesc.BufferDesc.Height	= (clientRect.bottom - clientRect.top);
+		swapChainDesc.BufferDesc.Width	= m_width;
+		swapChainDesc.BufferDesc.Height	= m_height;
 		swapChainDesc.BufferUsage		= DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		swapChainDesc.OutputWindow		= m_windowHandle;
 		swapChainDesc.SampleDesc.Count	= 1;
@@ -276,9 +278,9 @@ namespace GA
 
 		const GameVertex vertices[] =
 		{
-			{ {  0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
-			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
-			{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+			{ {  0.0f,  0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+			{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+			{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
 		};
 
 		D3D11_BUFFER_DESC vertexBuferDesc = {};
@@ -365,6 +367,27 @@ namespace GA
 	{
 		const float backgroundColor[] = { 0.0f, 0.5f, 1.0f, 1.0f };
 		m_pContext->ClearRenderTargetView( m_pBackBufferView, backgroundColor );
+
+		m_pContext->OMSetRenderTargets( 1u, &m_pBackBufferView, nullptr );
+
+		D3D11_VIEWPORT viewport = {};
+		viewport.Width		= (float)m_width;
+		viewport.Height		= (float)m_height;
+		viewport.MaxDepth	= 1.0f;
+
+		m_pContext->RSSetViewports( 1u, &viewport );
+
+		m_pContext->IASetInputLayout( m_pVertexLayout );
+		m_pContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+
+		UINT stride = sizeof( GameVertex );
+		UINT offset = 0u;
+		m_pContext->IASetVertexBuffers( 0u, 1u, &m_pVertexBuffer, &stride, &offset );
+
+		m_pContext->VSSetShader( m_pVertexShader, nullptr, 0u );
+		m_pContext->PSSetShader( m_pPixelShader, nullptr, 0u );
+
+		m_pContext->Draw( 3u, 0u );
 
 		m_pSwapChain->Present( 1, 0 );
 	}

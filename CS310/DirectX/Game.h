@@ -17,6 +17,9 @@ namespace GA
 		HWND					m_windowHandle		= nullptr;
 		bool					m_isOpen			= false;
 
+		UINT					m_width				= 0u;
+		UINT					m_height			= 0u;
+
 		// DirectX Device
 		IDXGISwapChain*			m_pSwapChain		= nullptr;
 		ID3D11Device*			m_pDevice			= nullptr;
