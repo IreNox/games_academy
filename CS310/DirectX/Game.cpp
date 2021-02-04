@@ -70,11 +70,95 @@ namespace GA
 
 		m_isOpen = true;
 
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		swapChainDesc.BufferCount		= 2u;
+		swapChainDesc.BufferDesc.Format	= DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferDesc.Width	= (clientRect.right - clientRect.left);
+		swapChainDesc.BufferDesc.Height	= (clientRect.bottom - clientRect.top);
+		swapChainDesc.BufferUsage		= DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.OutputWindow		= m_windowHandle;
+		swapChainDesc.SampleDesc.Count	= 1;
+		swapChainDesc.Windowed			= TRUE;
+		swapChainDesc.SwapEffect		= DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		swapChainDesc.Flags				= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+		const D3D_FEATURE_LEVEL supportedFeatureLevels[] =
+		{
+			D3D_FEATURE_LEVEL_11_0
+		};
+
+		UINT deviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+#ifdef _DEBUG
+		deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+		D3D_FEATURE_LEVEL selectedFeatureLevel;
+		result = D3D11CreateDeviceAndSwapChain(
+			nullptr,
+			D3D_DRIVER_TYPE_HARDWARE,
+			nullptr,
+			deviceFlags,
+			supportedFeatureLevels,
+			1u,
+			D3D11_SDK_VERSION,
+			&swapChainDesc,
+			&m_pSwapChain,
+			&m_pDevice,
+			&selectedFeatureLevel,
+			&m_pContext
+		);
+
+		if( FAILED( result ) )
+		{
+			shutdown();
+			return false;
+		}
+
+		ID3D11Texture2D* pBackBuffer = nullptr;
+		if( FAILED( m_pSwapChain->GetBuffer( 0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer ) ) )
+		{
+			shutdown();
+			return false;
+		}
+
+		if( FAILED( m_pDevice->CreateRenderTargetView( pBackBuffer, nullptr, &m_pBackBufferView ) ) )
+		{
+			pBackBuffer->Release();
+			shutdown();
+			return false;
+		}
+
+		pBackBuffer->Release();
+
 		return true;
 	}
 
 	void Game::shutdown()
 	{
+		if( m_pBackBufferView != nullptr )
+		{
+			m_pBackBufferView->Release();
+			m_pBackBufferView = nullptr;
+		}
+
+		if( m_pContext != nullptr )
+		{
+			m_pContext->Release();
+			m_pContext = nullptr;
+		}
+
+		if( m_pDevice != nullptr )
+		{
+			m_pDevice->Release();
+			m_pDevice = nullptr;
+		}
+
+		if( m_pSwapChain != nullptr )
+		{
+			m_pSwapChain->Release();
+			m_pSwapChain = nullptr;
+		}
+
 		if( m_windowHandle != nullptr )
 		{
 			DestroyWindow( m_windowHandle );
@@ -94,6 +178,10 @@ namespace GA
 
 	void Game::render()
 	{
+		const float backgroundColor[] = { 0.0f, 0.5f, 1.0f, 1.0f };
+		m_pContext->ClearRenderTargetView( m_pBackBufferView, backgroundColor );
+
+		m_pSwapChain->Present( 1, 0 );
 	}
 
 	LRESULT CALLBACK Game::windowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )

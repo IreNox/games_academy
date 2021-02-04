@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include <d3d11.h>
 
 namespace GA
 {
@@ -12,8 +13,16 @@ namespace GA
 
 	private:
 
-		HWND					m_windowHandle	= nullptr;
-		bool					m_isOpen		= false;
+		// Window
+		HWND					m_windowHandle		= nullptr;
+		bool					m_isOpen			= false;
+
+		// DirectX Device
+		IDXGISwapChain*			m_pSwapChain		= nullptr;
+		ID3D11Device*			m_pDevice			= nullptr;
+		ID3D11DeviceContext*	m_pContext			= nullptr;
+
+		ID3D11RenderTargetView*	m_pBackBufferView	= nullptr;
 
 		bool					initialize();
 		void					shutdown();
