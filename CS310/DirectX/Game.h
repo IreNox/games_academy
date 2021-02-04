@@ -24,8 +24,20 @@ namespace GA
 
 		ID3D11RenderTargetView*	m_pBackBufferView	= nullptr;
 
+		// DirectX Resources
+		ID3D11VertexShader*		m_pVertexShader		= nullptr;
+		ID3D11PixelShader*		m_pPixelShader		= nullptr;
+
+		ID3D11InputLayout*		m_pVertexLayout		= nullptr;
+		ID3D11Buffer*			m_pVertexBuffer		= nullptr;
+
 		bool					initialize();
 		void					shutdown();
+
+		bool					createResources();
+		void					destroyResources();
+
+		ID3DBlob*				compileShader( const char* pShaderText, const char* pTarget );
 
 		void					update();
 		void					render();

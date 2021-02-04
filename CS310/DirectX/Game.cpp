@@ -1,11 +1,19 @@
 #include "Game.h"
 
+#include <d3dcompiler.h>
+
 namespace GA
 {
 	static constexpr int	WindowWidth		= 1280;
 	static constexpr int	WindowHeight	= 720;
 
 	static const wchar_t*	s_pWindowTitle	= L"CS310 - DirectX";
+
+	struct GameVertex
+	{
+		float	position[ 3u ];
+		float	color[ 4u ];
+	};
 
 	void Game::run()
 	{
@@ -130,11 +138,19 @@ namespace GA
 
 		pBackBuffer->Release();
 
+		if( !createResources() )
+		{
+			shutdown();
+			return false;
+		}
+
 		return true;
 	}
 
 	void Game::shutdown()
 	{
+		destroyResources();
+
 		if( m_pBackBufferView != nullptr )
 		{
 			m_pBackBufferView->Release();
@@ -164,6 +180,175 @@ namespace GA
 			DestroyWindow( m_windowHandle );
 			m_windowHandle = nullptr;
 		}
+	}
+
+	bool Game::createResources()
+	{
+		const char* pVertexShader = R"V0G0N(
+			struct VertexInput
+			{
+				float3	position	: POSITION0;
+				float4	color		: COLOR0;
+			};
+
+			struct VertexToPixel
+			{
+				float4	position	: SV_POSITION0;
+				float4	color		: COLOR0;
+			};
+
+			VertexToPixel main( VertexInput input )
+			{
+				VertexToPixel output;
+				output.position	= float4( input.position, 1.0 );
+				output.color	= input.color;
+
+				return output;
+			}
+		)V0G0N";
+
+		ID3DBlob* pVertexShaderBlob = compileShader( pVertexShader, "vs_5_0" );
+		if( pVertexShaderBlob == nullptr )
+		{
+			return false;
+		}
+
+		HRESULT result = m_pDevice->CreateVertexShader( pVertexShaderBlob->GetBufferPointer(), pVertexShaderBlob->GetBufferSize(), nullptr, &m_pVertexShader );
+		if( FAILED( result ) )
+		{
+			pVertexShaderBlob->Release();
+			return false;
+		}
+
+		const D3D11_INPUT_ELEMENT_DESC inputElements[] =
+		{
+			{ "POSITION",	0u,	DXGI_FORMAT_R32G32B32_FLOAT,	0u,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u },
+			{ "COLOR",		0u, DXGI_FORMAT_R32G32B32A32_FLOAT,	0u, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u }
+		};
+
+		result = m_pDevice->CreateInputLayout( inputElements, 2u, pVertexShaderBlob->GetBufferPointer(), pVertexShaderBlob->GetBufferSize(), &m_pVertexLayout );
+		pVertexShaderBlob->Release();
+
+		if( FAILED( result ) )
+		{
+			return false;
+		}
+
+		const char* pPixelShader = R"V0G0N(
+			struct VertexToPixel
+			{
+				float4	position	: SV_POSITION0;
+				float4	color		: COLOR0;
+			};
+
+			struct PixelOutput
+			{
+				float4	color		: SV_TARGET0;
+			};
+
+			PixelOutput main( VertexToPixel input )
+			{
+				PixelOutput output;
+				output.color = input.color;
+
+				return output;
+			}
+		)V0G0N";
+
+		ID3DBlob* pPixelShaderBlob = compileShader( pPixelShader, "ps_5_0" );
+		if( pPixelShaderBlob == nullptr )
+		{
+			return false;
+		}
+
+		result = m_pDevice->CreatePixelShader( pPixelShaderBlob->GetBufferPointer(), pPixelShaderBlob->GetBufferSize(), nullptr, &m_pPixelShader );
+		pPixelShaderBlob->Release();
+		if( FAILED( result ) )
+		{
+			return false;
+		}
+
+		//struct GameVertex
+		//{
+		//	float	position[ 3u ];
+		//	float	color[ 4u ];
+		//};
+
+		const GameVertex vertices[] =
+		{
+			{ {  0.0f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+			{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+			{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+		};
+
+		D3D11_BUFFER_DESC vertexBuferDesc = {};
+		vertexBuferDesc.ByteWidth	= sizeof( vertices );
+		vertexBuferDesc.Usage		= D3D11_USAGE_IMMUTABLE;
+		vertexBuferDesc.BindFlags	= D3D11_BIND_VERTEX_BUFFER;
+
+		D3D11_SUBRESOURCE_DATA vertexData = {};
+		vertexData.pSysMem			= vertices;
+
+		if( FAILED( m_pDevice->CreateBuffer( &vertexBuferDesc, &vertexData, &m_pVertexBuffer ) ) )
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	void Game::destroyResources()
+	{
+		if( m_pVertexBuffer != nullptr )
+		{
+			m_pVertexBuffer->Release();
+			m_pVertexBuffer = nullptr;
+		}
+
+		if( m_pVertexLayout != nullptr )
+		{
+			m_pVertexLayout->Release();
+			m_pVertexLayout = nullptr;
+		}
+
+		if( m_pPixelShader != nullptr )
+		{
+			m_pPixelShader->Release();
+			m_pPixelShader = nullptr;
+		}
+
+		if( m_pVertexShader != nullptr )
+		{
+			m_pVertexShader->Release();
+			m_pVertexShader = nullptr;
+		}
+	}
+
+	ID3DBlob* Game::compileShader( const char* pShaderText, const char* pTarget )
+	{
+		ID3DBlob* pShaderBlob = nullptr;
+		ID3DBlob* pErrorBlob = nullptr;
+
+		UINT flags = 0;
+#ifdef _DEBUG
+		flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+		HRESULT result = D3DCompile( pShaderText, strlen( pShaderText ), "Shader", nullptr, nullptr, "main", pTarget, flags, 0, &pShaderBlob, &pErrorBlob );
+		if( FAILED( result ) )
+		{
+			MessageBoxA( m_windowHandle, (const char*)pErrorBlob->GetBufferPointer(), "DirectX", MB_ICONSTOP );
+
+			pErrorBlob->Release();
+			return nullptr;
+		}
+
+		if( pErrorBlob != nullptr )
+		{
+			pErrorBlob->Release();
+			pErrorBlob = nullptr;
+		}
+
+		return pShaderBlob;
 	}
 
 	void Game::update()
