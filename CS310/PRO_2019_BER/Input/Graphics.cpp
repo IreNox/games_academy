@@ -1,431 +1,462 @@
 #include "Graphics.h"
 
-#include "Types.h"
-
-#include <d3d11.h>
-#include <d3d11_1.h>
 #include <d3dcompiler.h>
-#include <windows.h>
 
 namespace GA
 {
-	namespace GraphicsInternal
+	static constexpr int	WindowWidth = 1280;
+	static constexpr int	WindowHeight = 720;
+
+	static const wchar_t*	s_pWindowTitle = L"CS310 - Input";
+
+	struct GraphicsVertexConstantData
 	{
-		static LRESULT CALLBACK		windowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam );
-	}
+		float		projection[ 4u ][ 4u ];
+	};
 
-	bool Graphics::create( const char* pWindowTitleUtf8, uint16_t width, uint16_t height )
+	bool Graphics::initialize()
 	{
-		const int windowTitleLength = MultiByteToWideChar( CP_UTF8, 0, pWindowTitleUtf8, -1, nullptr, 0 );
-		m_pWindowTitle = new wchar_t[ windowTitleLength ];
-		MultiByteToWideChar( CP_UTF8, 0, pWindowTitleUtf8, -1, m_pWindowTitle, windowTitleLength );
+		const HINSTANCE	hInstance = GetModuleHandle(nullptr);
 
-		const HINSTANCE	hInstance = GetModuleHandle( nullptr );
+		WNDCLASSEXW windowClass = {};
+		windowClass.cbSize = sizeof(WNDCLASSEXW);
+		windowClass.hInstance = hInstance;
+		windowClass.lpfnWndProc = &Graphics::windowProc;
+		windowClass.lpszClassName = L"GAWindowClass";
+		windowClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
+		windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
 
-		WNDCLASSEXW windowClass ={};
-		windowClass.cbSize			= sizeof( WNDCLASSEXW );
-		windowClass.hInstance		= hInstance;
-		windowClass.lpfnWndProc		= &GraphicsInternal::windowProc;
-		windowClass.lpszClassName	= L"GAWindowClass";
-		windowClass.hbrBackground	= (HBRUSH)COLOR_WINDOW;
-		windowClass.hCursor			= LoadCursor( nullptr, IDC_ARROW );
-
-		HRESULT result = RegisterClassExW( &windowClass );
-		if( FAILED( result ) )
+		HRESULT result = RegisterClassExW(&windowClass);
+		if (FAILED(result))
 		{
-			destroy();
-			showMessageBox( L"Can't register Class." );
 			return false;
 		}
 
 		m_windowHandle = CreateWindow(
 			L"GAWindowClass",
-			m_pWindowTitle,
+			s_pWindowTitle,
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
-			width,
-			height,
+			WindowWidth,
+			WindowHeight,
 			nullptr,
 			nullptr,
 			hInstance,
 			nullptr
 		);
 
-		if( m_windowHandle == nullptr )
+		if (m_windowHandle == nullptr)
 		{
-			destroy();
-			showMessageBox( L"Can't create Window." );
 			return false;
 		}
 
-		SetWindowLongPtr( m_windowHandle, GWLP_USERDATA, (LONG_PTR)this );
+		SetWindowLongPtr(m_windowHandle, GWLP_USERDATA, (LONG_PTR)this);
 
-		ShowWindow( m_windowHandle, SW_SHOWNORMAL );
-		UpdateWindow( m_windowHandle );
+		ShowWindow(m_windowHandle, SW_SHOWNORMAL);
+		UpdateWindow(m_windowHandle);
 
 		RECT clientRect;
-		GetClientRect( m_windowHandle, &clientRect );
+		GetClientRect(m_windowHandle, &clientRect);
 
-		m_isOpen		= true;
-		m_clientWidth	= (clientRect.right - clientRect.left);
-		m_clientHeight	= (clientRect.bottom - clientRect.top);
+		m_isOpen = true;
+		m_width = (clientRect.right - clientRect.left);
+		m_height = (clientRect.bottom - clientRect.top);
 
-		DXGI_SWAP_CHAIN_DESC swapDesc ={};
-		swapDesc.BufferCount						= 2;
-		swapDesc.BufferDesc.Format					= DXGI_FORMAT_R8G8B8A8_UNORM;
-		swapDesc.BufferDesc.Width					= m_clientWidth;
-		swapDesc.BufferDesc.Height					= m_clientHeight;
-		swapDesc.BufferDesc.RefreshRate.Denominator	= 1;
-		swapDesc.BufferDesc.RefreshRate.Numerator	= 60;
-		swapDesc.BufferUsage						= DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapDesc.OutputWindow						= m_windowHandle;
-		swapDesc.SampleDesc.Count					= 1;
-		swapDesc.SampleDesc.Quality					= 0;
-		swapDesc.Windowed							= TRUE;
-		swapDesc.SwapEffect							= DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapDesc.Flags								= DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
+		swapChainDesc.BufferCount = 2u;
+		swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		swapChainDesc.BufferDesc.Width = m_width;
+		swapChainDesc.BufferDesc.Height = m_height;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.OutputWindow = m_windowHandle;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.Windowed = TRUE;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-		const D3D_FEATURE_LEVEL supportedLevels[] =
+		const D3D_FEATURE_LEVEL supportedFeatureLevels[] =
 		{
-			D3D_FEATURE_LEVEL_11_1
+			D3D_FEATURE_LEVEL_11_0
 		};
 
-		UINT flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+		UINT deviceFlags = D3D11_CREATE_DEVICE_SINGLETHREADED;
 #ifdef _DEBUG
-		flags |= D3D11_CREATE_DEVICE_DEBUG;
+		deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-		D3D_FEATURE_LEVEL currentLevel;
+		D3D_FEATURE_LEVEL selectedFeatureLevel;
 		result = D3D11CreateDeviceAndSwapChain(
 			nullptr,
 			D3D_DRIVER_TYPE_HARDWARE,
 			nullptr,
-			flags,
-			supportedLevels,
-			ARRAY_COUNT( supportedLevels ),
+			deviceFlags,
+			supportedFeatureLevels,
+			1u,
 			D3D11_SDK_VERSION,
-			&swapDesc,
+			&swapChainDesc,
 			&m_pSwapChain,
 			&m_pDevice,
-			&currentLevel,
+			&selectedFeatureLevel,
 			&m_pContext
 		);
 
-		if( FAILED( result ) )
+		if (FAILED(result))
 		{
-			destroy();
-			showMessageBox( L"Failed to create Device." );
+			shutdown();
 			return false;
 		}
 
-		m_pContext->QueryInterface( &m_pContext1 );
-
-		update();
-
-		D3D11_BUFFER_DESC bufferDesc ={};
-		bufferDesc.ByteWidth		= 4u * 1024u * 1024u;
-		bufferDesc.Usage			= D3D11_USAGE_DYNAMIC;
-		bufferDesc.BindFlags		= D3D11_BIND_CONSTANT_BUFFER;
-		bufferDesc.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
-
-		result = m_pDevice->CreateBuffer( &bufferDesc, nullptr, &m_pConstantBuffer );
-		if( FAILED( result ) )
+		ID3D11Texture2D* pBackBuffer = nullptr;
+		if (FAILED(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer)))
 		{
-			destroy();
-			showMessageBox( L"Failed to create Constant Buffer." );
+			shutdown();
+			return false;
+		}
+
+		if (FAILED(m_pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &m_pBackBufferView)))
+		{
+			pBackBuffer->Release();
+			shutdown();
+			return false;
+		}
+
+		pBackBuffer->Release();
+
+		if (!createResources())
+		{
+			shutdown();
 			return false;
 		}
 
 		return true;
 	}
 
-	void Graphics::destroy()
+	void Graphics::shutdown()
 	{
-		while( m_pFirstShader != nullptr )
-		{
-			Shader* pShader = m_pFirstShader;
-			m_pFirstShader = pShader->pNext;
+		destroyResources();
 
-			SAFE_RELEASE( pShader->pVertexLayout );
-			SAFE_RELEASE( pShader->pVertexShader );
-			SAFE_RELEASE( pShader->pPixelShader );
+		if (m_pBackBufferView != nullptr)
+		{
+			m_pBackBufferView->Release();
+			m_pBackBufferView = nullptr;
 		}
 
-		SAFE_RELEASE( m_pConstantBuffer );
-		SAFE_RELEASE( m_pDepthStencilView );
-		SAFE_RELEASE( m_pDepthStencil );
-		SAFE_RELEASE( m_pBackBufferView );
-		SAFE_RELEASE( m_pContext1 );
-		SAFE_RELEASE( m_pContext );
-		SAFE_RELEASE( m_pDevice );
-		SAFE_RELEASE( m_pSwapChain );
-
-		if( m_windowHandle != nullptr )
+		if (m_pContext != nullptr)
 		{
-			DestroyWindow( m_windowHandle );
+			m_pContext->Release();
+			m_pContext = nullptr;
+		}
+
+		if (m_pDevice != nullptr)
+		{
+			m_pDevice->Release();
+			m_pDevice = nullptr;
+		}
+
+		if (m_pSwapChain != nullptr)
+		{
+			m_pSwapChain->Release();
+			m_pSwapChain = nullptr;
+		}
+
+		if (m_windowHandle != nullptr)
+		{
+			DestroyWindow(m_windowHandle);
 			m_windowHandle = nullptr;
-		}
-
-		if( m_pWindowTitle != nullptr )
-		{
-			delete[] m_pWindowTitle;
-			m_pWindowTitle = nullptr;
 		}
 	}
 
 	void Graphics::update()
 	{
 		MSG msg;
-		if( PeekMessage( &msg, nullptr, 0U, 0U, PM_REMOVE ) )
+		while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
 		{
-			TranslateMessage( &msg );
-			DispatchMessage( &msg );
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
-
-		const int windowClientWidth = m_clientWidth;
-		const int windowClientHeight = m_clientHeight;
-		if( (m_backBufferWidth == windowClientWidth && m_backBufferHeight == windowClientHeight) ||
-			windowClientWidth == 0 ||
-			windowClientHeight == 0 )
-		{
-			return;
-		}
-
-		m_pContext->OMSetRenderTargets( 0u, nullptr, nullptr );
-
-		SAFE_RELEASE( m_pDepthStencilView );
-		SAFE_RELEASE( m_pDepthStencil );
-		SAFE_RELEASE( m_pBackBufferView );
-
-		HRESULT result = m_pSwapChain->ResizeBuffers( 0, windowClientWidth, windowClientHeight, DXGI_FORMAT_UNKNOWN, 0 );
-		if( FAILED( result ) )
-		{
-			return;
-		}
-
-		{
-			ID3D11Texture2D* pBackBuffer;
-			result = m_pSwapChain->GetBuffer( 0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer );
-			if( FAILED( result ) )
-			{
-				showMessageBox( L"Could not get Back Buffer." );
-				return;
-			}
-
-			result = m_pDevice->CreateRenderTargetView( pBackBuffer, nullptr, &m_pBackBufferView );
-			pBackBuffer->Release();
-			if( FAILED( result ) )
-			{
-				showMessageBox( L"Failed to create Back Buffer View." );
-				return;
-			}
-		}
-
-		D3D11_TEXTURE2D_DESC depthStencilDesc = {};
-		depthStencilDesc.Width				= windowClientWidth;
-		depthStencilDesc.Height				= windowClientHeight;
-		depthStencilDesc.MipLevels			= 1u;
-		depthStencilDesc.ArraySize			= 1u;
-		depthStencilDesc.Format				= DXGI_FORMAT_D32_FLOAT;
-		depthStencilDesc.SampleDesc.Count	= 1u;
-		depthStencilDesc.Usage				= D3D11_USAGE_DEFAULT;
-		depthStencilDesc.BindFlags			= D3D11_BIND_DEPTH_STENCIL;
-
-		result = m_pDevice->CreateTexture2D( &depthStencilDesc, nullptr, &m_pDepthStencil );
-		if( FAILED( result ) )
-		{
-			showMessageBox( L"Failed to create Depth Stencil." );
-			return;
-		}
-
-		result = m_pDevice->CreateDepthStencilView( m_pDepthStencil, nullptr, &m_pDepthStencilView );
-		if( FAILED( result ) )
-		{
-			showMessageBox( L"Failed to create Depth Stencil View." );
-			return;
-		}
-
-		m_backBufferWidth	= windowClientWidth;
-		m_backBufferHeight	= windowClientHeight;
 	}
 
-	GraphicsShaderHandle Graphics::createVertexShader( MemoryBlock data, GraphicsVertexFormat vertexFormat )
+	ID3D11DeviceContext* Graphics::beginFrame( const float backgroundColor[ 4u ] )
 	{
-		ID3DBlob* pShaderBlob = compileShader( data, "vertex_shader", "vs_5_0" );
-		if( pShaderBlob == nullptr )
-		{
-			return false;
-		}
+		D3D11_MAPPED_SUBRESOURCE mapData;
+		m_pContext->Map( m_pConstantBuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &mapData );
 
-		Shader* pShader = new Shader();
+		GraphicsVertexConstantData* pConstantData = (GraphicsVertexConstantData*)mapData.pData;
 
-		HRESULT result = m_pDevice->CreateVertexShader( pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), nullptr, &pShader->pVertexShader );
-		if( FAILED( result ) )
-		{
-			pShader->pVertexShader->Release();
-			delete pShader;
+		pConstantData->projection[	0u	][	0u	] = 2.0f / float( m_width );
+		pConstantData->projection[	1u	][	0u	] = 0.0f;
+		pConstantData->projection[	2u	][	0u	] = 0.0f;
+		pConstantData->projection[	3u	][	0u	] = 0.0f;
 
-			pShaderBlob->Release();
+		pConstantData->projection[	0u	][	1u	] = 0.0f;
+		pConstantData->projection[	1u	][	1u	] = 2.0f / -float( m_height );
+		pConstantData->projection[	2u	][	1u	] = 0.0f;
+		pConstantData->projection[	3u	][	1u	] = 0.0f;
 
-			showMessageBox( L"Failed to create Vertex Shader." );
-			return false;
-		}
+		pConstantData->projection[	0u	][	2u	] = 0.0f;
+		pConstantData->projection[	1u	][	2u	] = 0.0f;
+		pConstantData->projection[	2u	][	2u	] = 1.0f / (0.0f - 1.0f);
+		pConstantData->projection[	3u	][	2u	] = 0.0f;
 
-		switch( vertexFormat )
-		{
-		case GraphicsVertexFormat::Position3_Uv2:
-			{
-				const D3D11_INPUT_ELEMENT_DESC inputElements[] =
-				{
-					{ "POSITION",	0u, DXGI_FORMAT_R32G32B32_FLOAT,	0u, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0u },
-					{ "TEXCOORD",	0u, DXGI_FORMAT_R32G32_FLOAT,		0u, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0u }
-				};
+		pConstantData->projection[	0u	][	3u	] = -1.0f;
+		pConstantData->projection[	1u	][	3u	] = 1.0f;
+		pConstantData->projection[	2u	][	3u	] = 0.0f;
+		pConstantData->projection[	3u	][	3u	] = 1.0f;
 
-				result = m_pDevice->CreateInputLayout( inputElements, ARRAY_COUNT( inputElements ), pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &pShader->pVertexLayout );
-			}
-			break;
-		}
+		m_pContext->Unmap( m_pConstantBuffer, 0u );
 
-		if( FAILED( result ) )
-		{
-			pShader->pVertexShader->Release();
-			delete pShader;
+		m_pContext->ClearRenderTargetView(m_pBackBufferView, backgroundColor);
 
-			pShaderBlob->Release();
-
-			showMessageBox( L"Failed to create Input Layout." );
-			return false;
-		}
-
-		pShaderBlob->Release();
-
-		pShader->pNext = m_pFirstShader;
-		m_pFirstShader = pShader;
-
-		return (GraphicsShaderHandle)pShader;
-	}
-
-	GraphicsShaderHandle Graphics::createPixelShader( MemoryBlock data )
-	{
-		ID3DBlob* pShaderBlob = compileShader( data, "pixel_shader", "ps_5_0" );
-		if( pShaderBlob == nullptr )
-		{
-			return false;
-		}
-
-		Shader* pShader = new Shader();
-
-		HRESULT result = m_pDevice->CreatePixelShader( pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), nullptr, &pShader->pPixelShader );
-		if( FAILED( result ) )
-		{
-			pShader->pPixelShader->Release();
-			delete pShader;
-
-			pShaderBlob->Release();
-
-			showMessageBox( L"Failed to create Shader." );
-			return false;
-		}
-
-		pShader->pNext = m_pFirstShader;
-		m_pFirstShader = pShader;
-
-		return (GraphicsShaderHandle)pShader;
-	}
-
-	ID3D11DeviceContext* Graphics::beginFrame( const float backBufferClearColor[ 4u ] )
-	{
-		m_pContext->ClearRenderTargetView( m_pBackBufferView, backBufferClearColor );
-		m_pContext->ClearDepthStencilView( m_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0u );
-
-		m_pContext->OMSetRenderTargets( 1u, &m_pBackBufferView, m_pDepthStencilView );
+		m_pContext->OMSetRenderTargets(1u, &m_pBackBufferView, nullptr);
 
 		D3D11_VIEWPORT viewport = {};
-		viewport.Width		= (float)m_backBufferWidth;
-		viewport.Height		= (float)m_backBufferHeight;
-		viewport.MaxDepth	= 1.0f;
-		m_pContext->RSSetViewports( 1u, &viewport );
+		viewport.Width = (float)m_width;
+		viewport.Height = (float)m_height;
+		viewport.MaxDepth = 1.0f;
 
-		D3D11_MAPPED_SUBRESOURCE constantData;
-		m_pContext->Map( m_pConstantBuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &constantData );
-		m_pConstantData		= (uint8_t*)constantData.pData;
-		m_constantOffset	= 0u;
+		m_pContext->RSSetViewports(1u, &viewport);
+
+		m_pContext->IASetInputLayout(m_pVertexLayout);
+		m_pContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		m_pContext->VSSetShader(m_pVertexShader, nullptr, 0u);
+		m_pContext->PSSetShader(m_pPixelShader, nullptr, 0u);
+
+		m_pContext->VSSetConstantBuffers( 0u, 1u, &m_pConstantBuffer );
 
 		return m_pContext;
 	}
 
 	void Graphics::endFrame()
 	{
-		m_pContext->Unmap( m_pConstantBuffer, 0u );
-		m_pSwapChain->Present( 1u, 0u );
+		m_pSwapChain->Present(1, 0);
 	}
 
-	void Graphics::applyShader( GraphicsShaderHandle shaderHandle )
+	void Graphics::draw( const GameVertex* pVertives, UINT vertexCount )
 	{
-		Shader* pShader = (Shader*)shaderHandle;
-		if( pShader->pVertexShader != nullptr )
+		D3D11_MAPPED_SUBRESOURCE bufferData;
+		m_pContext->Map( m_pVertexBuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &bufferData );
+
+		memcpy( bufferData.pData, pVertives, sizeof( GameVertex ) * vertexCount );
+
+		m_pContext->Unmap( m_pVertexBuffer, 0u );
+
+		UINT stride = sizeof( GameVertex );
+		UINT offset = 0u;
+		m_pContext->IASetVertexBuffers( 0u, 1u, &m_pVertexBuffer, &stride, &offset );
+
+		m_pContext->Draw( vertexCount, 0u );
+	}
+
+	bool Graphics::createResources()
+	{
+		const char* pVertexShader = R"V0G0N(
+			struct VertexInput
+			{
+				float3	position	: POSITION0;
+				float4	color		: COLOR0;
+			};
+
+			struct VertexToPixel
+			{
+				float4	position	: SV_POSITION0;
+				float4	color		: COLOR0;
+			};
+
+			cbuffer constants : register(b0)
+			{
+				float4x4	proj;
+			};
+
+			VertexToPixel main( VertexInput input )
+			{
+				float4 position = float4( input.position, 1.0 );
+				position = mul( position, proj );
+
+				VertexToPixel output;
+				output.position	= position;
+				output.color	= input.color;
+
+				return output;
+			}
+		)V0G0N";
+
+		ID3DBlob* pVertexShaderBlob = compileShader(pVertexShader, "vs_5_0");
+		if (pVertexShaderBlob == nullptr)
 		{
-			m_pContext->IASetInputLayout( pShader->pVertexLayout );
-			m_pContext->VSSetShader( pShader->pVertexShader, nullptr, 0u );
+			return false;
 		}
-		else if( pShader->pPixelShader != nullptr )
+
+		HRESULT result = m_pDevice->CreateVertexShader(pVertexShaderBlob->GetBufferPointer(), pVertexShaderBlob->GetBufferSize(), nullptr, &m_pVertexShader);
+		if (FAILED(result))
 		{
-			m_pContext->PSSetShader( pShader->pPixelShader, nullptr, 0u );
+			pVertexShaderBlob->Release();
+			return false;
 		}
-		else
+
+		const D3D11_INPUT_ELEMENT_DESC inputElements[] =
 		{
-			OutputDebugStringW( L"Failed to set Shader.\n" );
+			{ "POSITION",	0u,	DXGI_FORMAT_R32G32B32_FLOAT,	0u,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u },
+			{ "COLOR",		0u, DXGI_FORMAT_R32G32B32A32_FLOAT,	0u, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u }
+		};
+
+		result = m_pDevice->CreateInputLayout( inputElements, ARRAY_COUNT( inputElements ), pVertexShaderBlob->GetBufferPointer(), pVertexShaderBlob->GetBufferSize(), &m_pVertexLayout );
+		pVertexShaderBlob->Release();
+
+		if (FAILED(result))
+		{
+			return false;
+		}
+
+		const char* pPixelShader = R"V0G0N(
+			struct VertexToPixel
+			{
+				float4	position	: SV_POSITION0;
+				float4	color		: COLOR0;
+			};
+
+			struct PixelOutput
+			{
+				float4	color		: SV_TARGET0;
+			};
+
+			PixelOutput main( VertexToPixel input )
+			{
+				PixelOutput output;
+				output.color = input.color;
+
+				return output;
+			}
+		)V0G0N";
+
+		ID3DBlob* pPixelShaderBlob = compileShader(pPixelShader, "ps_5_0");
+		if (pPixelShaderBlob == nullptr)
+		{
+			return false;
+		}
+
+		result = m_pDevice->CreatePixelShader(pPixelShaderBlob->GetBufferPointer(), pPixelShaderBlob->GetBufferSize(), nullptr, &m_pPixelShader);
+		pPixelShaderBlob->Release();
+		if (FAILED(result))
+		{
+			return false;
+		}
+
+		D3D11_BUFFER_DESC vertexBuferDesc = {};
+		vertexBuferDesc.ByteWidth		= sizeof( GameVertex ) * 128u;
+		vertexBuferDesc.Usage			= D3D11_USAGE_DYNAMIC;
+		vertexBuferDesc.BindFlags		= D3D11_BIND_VERTEX_BUFFER;
+		vertexBuferDesc.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
+
+		if( FAILED( m_pDevice->CreateBuffer( &vertexBuferDesc, nullptr, &m_pVertexBuffer ) ) )
+		{
+			return false;
+		}
+
+		D3D11_BUFFER_DESC constantBufferDesc = {};
+		constantBufferDesc.ByteWidth		= sizeof( GraphicsVertexConstantData );
+		constantBufferDesc.Usage			= D3D11_USAGE_DYNAMIC;
+		constantBufferDesc.BindFlags		= D3D11_BIND_CONSTANT_BUFFER;
+		constantBufferDesc.CPUAccessFlags	= D3D11_CPU_ACCESS_WRITE;
+
+		if( FAILED( m_pDevice->CreateBuffer( &constantBufferDesc, nullptr, &m_pConstantBuffer) ) )
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	void Graphics::destroyResources()
+	{
+		if (m_pConstantBuffer != nullptr)
+		{
+			m_pConstantBuffer->Release();
+			m_pConstantBuffer = nullptr;
+		}
+
+		if (m_pVertexBuffer != nullptr)
+		{
+			m_pVertexBuffer->Release();
+			m_pVertexBuffer = nullptr;
+		}
+
+		if (m_pVertexLayout != nullptr)
+		{
+			m_pVertexLayout->Release();
+			m_pVertexLayout = nullptr;
+		}
+
+		if (m_pPixelShader != nullptr)
+		{
+			m_pPixelShader->Release();
+			m_pPixelShader = nullptr;
+		}
+
+		if (m_pVertexShader != nullptr)
+		{
+			m_pVertexShader->Release();
+			m_pVertexShader = nullptr;
 		}
 	}
 
-	void* Graphics::applyVertexConstantData( uint32_t slotIndex, size_t size )
+	ID3DBlob* Graphics::compileShader(const char* pShaderText, const char* pTarget)
 	{
-		const UINT alignedSize = ALIGN_VALUE( size, 256u );
-		const UINT consantSize = alignedSize / 16u;
+		ID3DBlob* pShaderBlob = nullptr;
+		ID3DBlob* pErrorBlob = nullptr;
 
-		void* pData = m_pConstantData + (m_constantOffset * 16u);
-		m_constantOffset += consantSize;
+		UINT flags = 0;
+#ifdef _DEBUG
+		flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+		HRESULT result = D3DCompile(pShaderText, strlen(pShaderText), "Shader", nullptr, nullptr, "main", pTarget, flags, 0, &pShaderBlob, &pErrorBlob);
+		if (FAILED(result))
+		{
+			MessageBoxA(m_windowHandle, (const char*)pErrorBlob->GetBufferPointer(), "DirectX", MB_ICONSTOP);
 
-		m_pContext1->VSSetConstantBuffers1( slotIndex, 1u, &m_pConstantBuffer, &m_constantOffset, &consantSize );
+			pErrorBlob->Release();
+			return nullptr;
+		}
 
-		return pData;
+		if (pErrorBlob != nullptr)
+		{
+			pErrorBlob->Release();
+			pErrorBlob = nullptr;
+		}
+
+		return pShaderBlob;
 	}
 
-	void* Graphics::applyPixelConstantData( uint32_t slotIndex, size_t size )
+	LRESULT CALLBACK Graphics::windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		const UINT alignedSize = ALIGN_VALUE( size, 256u );
-		const UINT consantSize = alignedSize / 16u;
+		Graphics* pGraphics = (Graphics*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+		if (pGraphics != nullptr &&
+			pGraphics->handleMessage(message, wParam))
+		{
+			return 0u;
+		}
 
-		void* pData = m_pConstantData + (m_constantOffset * 16u);
-		m_constantOffset += consantSize;
+		switch (message)
+		{
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
 
-		m_pContext1->PSSetConstantBuffers1( slotIndex, 1u, &m_pConstantBuffer, &m_constantOffset, &consantSize );
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+			break;
+		}
 
-		return pData;
+		return 0;
 	}
 
-	void Graphics::showMessageBox( const wchar_t* pMessage ) const
+	bool Graphics::handleMessage(unsigned int messageCode, size_t wParam)
 	{
-		MessageBoxW( m_windowHandle, pMessage, m_pWindowTitle, MB_ICONSTOP );
-	}
-
-	bool Graphics::handleMessage( unsigned int messageCode, size_t wParam )
-	{
-		switch( messageCode )
+		switch (messageCode)
 		{
 		case WM_CLOSE:
 			m_isOpen = false;
-			return true;
-
-		case WM_SIZE:
-			{
-				RECT clientRect;
-				GetClientRect( m_windowHandle, &clientRect );
-
-				m_clientWidth	= (clientRect.right - clientRect.left);
-				m_clientHeight	= (clientRect.bottom - clientRect.top);
-			}
 			return true;
 
 		default:
@@ -433,66 +464,5 @@ namespace GA
 		}
 
 		return false;
-	}
-
-	LRESULT CALLBACK GraphicsInternal::windowProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
-	{
-		Graphics* pGraphics = (Graphics*)GetWindowLongPtr( hWnd, GWLP_USERDATA );
-		if( pGraphics != nullptr &&
-			pGraphics->handleMessage( message, wParam ) )
-		{
-			return 0u;
-		}
-
-		switch( message )
-		{
-		case WM_DESTROY:
-			PostQuitMessage( 0 );
-			break;
-
-		default:
-			return DefWindowProc( hWnd, message, wParam, lParam );
-			break;
-		}
-
-		return 0;
-	}
-
-	ID3D10Blob* Graphics::compileShader( const MemoryBlock& data, const char* pFilename, const char* pTarget )
-	{
-		ID3DBlob* pShaderBlob = nullptr;
-		ID3DBlob* pErrorBlob = nullptr;
-		UINT flags = 0u;
-#ifdef _DEBUG
-		flags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-		HRESULT result = D3DCompile( data.pData, data.size, pFilename, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", pTarget, flags, 0u, &pShaderBlob, &pErrorBlob );
-		if( FAILED( result ) )
-		{
-			if( pErrorBlob != nullptr )
-			{
-				WCHAR wideBuffer[ 2048u ];
-				MultiByteToWideChar( CP_UTF8, 0, (const char*)pErrorBlob->GetBufferPointer(), -1, wideBuffer, ARRAY_COUNT( wideBuffer ) );
-
-				showMessageBox( wideBuffer );
-
-				pErrorBlob->Release();
-				pErrorBlob = nullptr;
-			}
-			else
-			{
-				showMessageBox( L"Failed to compile Shader." );
-			}
-
-			return nullptr;
-		}
-
-		if( pErrorBlob != nullptr )
-		{
-			pErrorBlob->Release();
-			pErrorBlob = nullptr;
-		}
-
-		return pShaderBlob;
 	}
 }

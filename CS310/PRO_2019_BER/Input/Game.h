@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Graphics.h"
-#include "Input.h"
-#include "Model.h"
 
 namespace GA
 {
@@ -10,19 +8,11 @@ namespace GA
 	{
 	public:
 
-		int						run();
+		void					run();
 
 	private:
 
 		Graphics				m_graphics;
-		Input					m_input;
-
-		bool					m_running;
-
-		GraphicsShaderHandle	m_vertexShader;
-		GraphicsShaderHandle	m_pixelShader;
-
-		Model					m_plane;
 
 		void					update();
 		void					render();
