@@ -2,6 +2,7 @@
 
 #include "Graphics.h"
 #include "Input.h"
+#include "Timer.h"
 
 #include <stdint.h>
 
@@ -17,6 +18,8 @@ namespace GA
 
 		Graphics				m_graphics;
 		Input					m_input;
+
+		Timer					m_timer;
 
 		bool					m_running		= true;
 

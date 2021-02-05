@@ -17,6 +17,8 @@ namespace GA
 			return;
 		}
 
+		m_timer.create();
+
 		while( m_graphics.isOpen() && m_running )
 		{
 			update();
