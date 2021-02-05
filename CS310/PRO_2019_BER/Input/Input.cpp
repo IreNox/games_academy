@@ -34,6 +34,7 @@ namespace GA
 
 	bool Input::create( Graphics& graphics )
 	{
+		m_pGraphics	= &graphics;
 		m_pState	= new InputState();
 
 		const HINSTANCE hInstance = GetModuleHandle( nullptr );
@@ -138,6 +139,7 @@ namespace GA
 		}
 
 		GetCursorPos( &m_pState->mousePosition );
+		ScreenToClient( m_pGraphics->getHandle(), &m_pState->mousePosition );
 	}
 
 	float Input::getMouseDeltaX() const

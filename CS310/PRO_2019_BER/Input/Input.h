@@ -60,6 +60,8 @@ namespace GA
 
 	private:
 
+		Graphics*				m_pGraphics		= nullptr;
+
 		IDirectInputA*			m_pInputDevice	= nullptr;
 		IDirectInputDeviceA*	m_pMouse		= nullptr;
 		IDirectInputDeviceA*	m_pKeyboard		= nullptr;
