@@ -7,6 +7,12 @@ namespace GA
 	static const float s_rectWidth	= 100.0f;
 	static const float s_rectHeight	= 100.0f;
 
+	template< class T >
+	T clamp( T value, T min, T max )
+	{
+		return value < min ? min : (value > max ? max : value);
+	}
+
 	void Game::run()
 	{
 		if( !m_graphics.initialize() )
@@ -37,7 +43,8 @@ namespace GA
 		m_graphics.update();
 		m_input.update();
 
-		if (m_input.wasKeyboardKeyPressed(InputKeyboardKey::Escape))
+		if( m_input.wasKeyboardKeyPressed( InputKeyboardKey::Escape ) ||
+			m_input.wasGamepadButtonPressed( InputGamepadButton::Start ) )
 		{
 			m_running = false;
 		}
@@ -71,6 +78,15 @@ namespace GA
 		{
 			moveY += 1.0f;
 		}
+
+		moveX += m_input.getGamepadAxis( InputGamepadAxis::LeftX );
+		moveY -= m_input.getGamepadAxis( InputGamepadAxis::LeftY );
+
+		moveY += m_input.getGamepadAxis( InputGamepadAxis::TriggerLeft );
+		moveY -= m_input.getGamepadAxis( InputGamepadAxis::TriggerRight );
+
+		moveX = clamp( moveX, -1.0f, 1.0f );
+		moveY = clamp( moveY, -1.0f, 1.0f );
 
 		const float speed = 300.0f;
 		m_rectX += float( moveX * speed * deltaTime );

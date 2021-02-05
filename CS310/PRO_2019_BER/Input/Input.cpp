@@ -5,6 +5,8 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
+#include <Xinput.h>
+
 namespace GA
 {
 	static const uint8_t s_keyboardMapping[] =
@@ -27,6 +29,9 @@ namespace GA
 		POINT			mousePosition;
 		DIMOUSESTATE2	lastMouseState;
 		DIMOUSESTATE2	currentMouseState;
+
+		XINPUT_STATE	lastGamepadState;
+		XINPUT_STATE	currentGamepadState;
 
 		uint8_t			lastKeyboardState[ 256u ];
 		uint8_t			currentKeyboardState[ 256u ];
@@ -140,6 +145,9 @@ namespace GA
 
 		GetCursorPos( &m_pState->mousePosition );
 		ScreenToClient( m_pGraphics->getHandle(), &m_pState->mousePosition );
+
+		m_pState->lastGamepadState = m_pState->currentGamepadState;
+		XInputGetState( 0u, &m_pState->currentGamepadState );
 	}
 
 	float Input::getMouseDeltaX() const
@@ -200,5 +208,52 @@ namespace GA
 	bool Input::wasKeyboardKeyReleased( InputKeyboardKey key ) const
 	{
 		return (m_pState->currentKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) == 0u && (m_pState->lastKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) != 0u;
+	}
+
+	float Input::getGamepadAxis( InputGamepadAxis axis ) const
+	{
+		SHORT value = 0;
+		SHORT deadZone = 0;
+		float maxValue = 0.0f;
+		switch( axis )
+		{
+		case InputGamepadAxis::LeftX:			value = m_pState->currentGamepadState.Gamepad.sThumbLX; deadZone = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE; maxValue = 32767.0f; break;
+		case InputGamepadAxis::LeftY:			value = m_pState->currentGamepadState.Gamepad.sThumbLY; deadZone = XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE; maxValue = 32767.0f; break;
+		case InputGamepadAxis::RightX:			value = m_pState->currentGamepadState.Gamepad.sThumbRX; deadZone = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE; maxValue = 32767.0f; break;
+		case InputGamepadAxis::RightY:			value = m_pState->currentGamepadState.Gamepad.sThumbRY; deadZone = XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE; maxValue = 32767.0f; break;
+		case InputGamepadAxis::TriggerLeft:		value = m_pState->currentGamepadState.Gamepad.bLeftTrigger; deadZone = XINPUT_GAMEPAD_TRIGGER_THRESHOLD; maxValue = 255.0f; break;
+		case InputGamepadAxis::TriggerRight:	value = m_pState->currentGamepadState.Gamepad.bRightTrigger; deadZone = XINPUT_GAMEPAD_TRIGGER_THRESHOLD; maxValue = 255.0f; break;
+		}
+
+		if( abs( value ) < deadZone )
+		{
+			value = 0u;
+		}
+
+		return float( value ) / maxValue;
+	}
+
+	bool Input::isGamepadButtonDown( InputGamepadButton button ) const
+	{
+		const DWORD buttonMask = 1u << (DWORD)button;
+		return (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) != 0u;
+	}
+
+	bool Input::isGamepadButtonUp( InputGamepadButton button ) const
+	{
+		const DWORD buttonMask = 1u << (DWORD)button;
+		return (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) == 0u;
+	}
+
+	bool Input::wasGamepadButtonPressed( InputGamepadButton button ) const
+	{
+		const DWORD buttonMask = 1u << (DWORD)button;
+		return  (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) != 0u && (m_pState->lastGamepadState.Gamepad.wButtons & buttonMask) == 0u;
+	}
+
+	bool Input::wasGamepadButtonReleased( InputGamepadButton button ) const
+	{
+		const DWORD buttonMask = 1u << (DWORD)button;
+		return  (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) == 0u && (m_pState->lastGamepadState.Gamepad.wButtons & buttonMask) != 0u;
 	}
 }
