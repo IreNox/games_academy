@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-namespace GamesAcademy
+namespace GA
 {
 	class Timer
 	{

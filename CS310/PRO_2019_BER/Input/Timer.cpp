@@ -1,6 +1,6 @@
 #include "Timer.h"
 
-namespace GamesAcademy
+namespace GA
 {
 	void Timer::create()
 	{
