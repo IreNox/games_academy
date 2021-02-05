@@ -97,7 +97,7 @@ namespace GA
 
 		ID3D11Buffer*				m_pConstantBuffer	= nullptr;
 		uint8_t*					m_pConstantData		= nullptr;
-		size_t						m_constantOffset	= 0u;
+		unsigned					m_constantOffset	= 0u;
 
 		ID3D10Blob*					compileShader( const MemoryBlock& data, const char* pFilename, const char* pTarget );
 	};
