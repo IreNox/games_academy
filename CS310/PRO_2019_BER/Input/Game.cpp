@@ -4,6 +4,9 @@
 
 namespace GA
 {
+	static const float s_rectWidth	= 100.0f;
+	static const float s_rectHeight	= 100.0f;
+
 	void Game::run()
 	{
 		if( !m_graphics.initialize() )
@@ -38,6 +41,46 @@ namespace GA
 		{
 			m_running = false;
 		}
+
+		const double gameTime = m_timer.get();
+		const double deltaTime = gameTime - m_lastTime;
+		m_lastTime = gameTime;
+
+		float moveX = 0.0f;
+		float moveY = 0.0f;
+		if (m_input.isKeyboardKeyDown(InputKeyboardKey::A) ||
+			m_input.isKeyboardKeyDown(InputKeyboardKey::Left))
+		{
+			moveX -= 1.0f;
+		}
+
+		if (m_input.isKeyboardKeyDown(InputKeyboardKey::D) ||
+			m_input.isKeyboardKeyDown(InputKeyboardKey::Right))
+		{
+			moveX += 1.0f;
+		}
+
+		if (m_input.isKeyboardKeyDown(InputKeyboardKey::W) ||
+			m_input.isKeyboardKeyDown(InputKeyboardKey::Up))
+		{
+			moveY -= 1.0f;
+		}
+
+		if (m_input.isKeyboardKeyDown(InputKeyboardKey::S) ||
+			m_input.isKeyboardKeyDown(InputKeyboardKey::Down))
+		{
+			moveY += 1.0f;
+		}
+
+		const float speed = 300.0f;
+		m_rectX += float( moveX * speed * deltaTime );
+		m_rectY += float( moveY * speed * deltaTime );
+
+		if (m_input.isMouseButtonDown(InputMouseButton::Left))
+		{
+			m_rectX = m_input.getMousePositionX() - (s_rectWidth / 2.0f);
+			m_rectY = m_input.getMousePositionY() - (s_rectHeight / 2.0f);
+		}
 	}
 
 	void Game::render()
@@ -45,10 +88,7 @@ namespace GA
 		const float backgroundColor[] = { 0.0f, 0.5f, 1.0f, 1.0f };
 		ID3D11DeviceContext* pContext = m_graphics.beginFrame( backgroundColor );
 
-		drawRect(100.0f, 100.0f, 100.0f, 100.0f, 0xffae00ff);
-		drawRect(300.0f, 100.0f, 100.0f, 100.0f, 0x1d7328ff);
-		drawRect(500.0f, 100.0f, 100.0f, 100.0f, 0xff0000ff);
-		drawRect(700.0f, 100.0f, 100.0f, 100.0f, 0x00ff00ff);
+		drawRect( m_rectX, m_rectY, s_rectWidth, s_rectHeight, 0xffae00ff );
 
 		m_graphics.endFrame();
 	}
