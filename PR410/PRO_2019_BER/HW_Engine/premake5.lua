@@ -11,6 +11,10 @@ project "HW_Engine"
 	
 	symbols "On"
 	
+	if os.target() == "windows" then
+		defines{ "HW_WINDOWS" }
+	end
+	
 	filter{ "configurations:Debug" }
 		defines{ "DEBUG", "HW_DEBUG" }
 		
@@ -27,3 +31,6 @@ project "HW_Engine"
 	files{ "src/*.h", "src/*.cpp" }
 	
 	import_module( "core" )
+	import_module( "resource" )
+	import_module( "sound" )
+	import_module( "physic" )
