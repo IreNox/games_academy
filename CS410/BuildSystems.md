@@ -30,7 +30,7 @@ Achtet auf eure Build Zeiten: https://artificial-mind.net/projects/compile-healt
 - Sollte mit anderen Build-System kombiniert werden 
 - Link: https://ninja-build.org/ 
 
-## GENie 
+## Premake/GENie 
 
 - Einfach zu konfigurieren (LUA) 
 - Plattform unabhängig 
