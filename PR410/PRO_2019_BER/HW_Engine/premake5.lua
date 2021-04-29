@@ -17,6 +17,7 @@ project( "HW_Engine" )
 	import_module( "core" )
 	import_module( "resource" )
 	import_module( "sound" )
+	import_module( "framework" )
 	import_module( "physic" )
 	
 project( "HW_Converter" )
