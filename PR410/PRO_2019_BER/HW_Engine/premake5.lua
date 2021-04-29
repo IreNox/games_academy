@@ -1,36 +1,32 @@
 dofile( "scripts/functions.lua" )
 
-workspace "HW_Engine"
+workspace( "HW_Engine" )
 	configurations{ "Debug", "Release", "Master" }
 	platforms{ "x64" }
 	location( "build" )
+	systemversion( "latest" )
 	
-project "HW_Engine"
-	kind "WindowedApp"
-	language "C++"
+project( "HW_Engine" )
+	kind( "WindowedApp" )
+	language( "C++" )
 	
-	symbols "On"
+	setup_default_defines()
 	
-	if os.target() == "windows" then
-		defines{ "HW_WINDOWS" }
-	end
-	
-	filter{ "configurations:Debug" }
-		defines{ "DEBUG", "HW_DEBUG" }
-		
-	filter{ "configurations:Release" }
-		defines{ "NDEBUG", "HW_RELEASE" }
-		optimize "On"
-
-	filter{ "configurations:Master" }
-		defines{ "NDEBUG", "HW_MASTER" }
-		optimize "On"
-
-	filter{}
-	
-	files{ "src/*.h", "src/*.cpp" }
+	files{ "src/engine/*.h", "src/engine/*.cpp" }
 	
 	import_module( "core" )
 	import_module( "resource" )
 	import_module( "sound" )
 	import_module( "physic" )
+	
+project( "HW_Converter" )
+	kind( "ConsoleApp" )
+	language( "C++" )
+	
+	setup_default_defines()
+	
+	files{ "src/converter/*.h", "src/converter/*.cpp" }
+	
+	import_module( "core" )
+	import_module( "resource" )
+	import_module( "resource_tools" )
