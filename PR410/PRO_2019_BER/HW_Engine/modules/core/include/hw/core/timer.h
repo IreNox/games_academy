@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-namespace GA
+namespace hw
 {
 	class Timer
 	{

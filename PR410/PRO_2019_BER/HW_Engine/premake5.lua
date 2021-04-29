@@ -15,6 +15,8 @@ project( "HW_Engine" )
 	files{ "src/engine/*.h", "src/engine/*.cpp" }
 	
 	import_module( "core" )
+	import_module( "graphics" )
+	import_module( "input" )
 	import_module( "resource" )
 	import_module( "sound" )
 	import_module( "framework" )

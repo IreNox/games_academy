@@ -1,6 +1,8 @@
 #include "hw/framework/framework.h"
 
 #include "hw/framework/application.h"
+#include "hw/graphics/graphics_system.h"
+#include "hw/input/input_system.h"
 #include "hw/resource/resource_system.h"
 #include "hw/sound/sound_system.h"
 
@@ -13,16 +15,19 @@ namespace hw
 			return 1;
 		}
 
-		while( m_pGraphicsSystem->isWindowOpen() )
+		const float backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		while( m_pGraphicsSystem->isOpen() )
 		{
 			m_pApplication->update();
 
-			m_pGraphicsSystem->beginFrame();
+			m_pGraphicsSystem->beginFrame( backgroundColor );
 			m_pApplication->render();
 			m_pGraphicsSystem->endFrame();
 		}
 
 		destroy();
+
+		return 0;
 	}
 
 	bool Framework::create()
@@ -35,14 +40,14 @@ namespace hw
 		}
 
 		m_pInputSystem = new InputSystem();
-		if( !m_pInputSystem->create() )
+		if( !m_pInputSystem->create( *m_pGraphicsSystem ) )
 		{
 			destroy();
 			return false;
 		}
 
 		m_pResourceSystem = new ResourceSystem();
-		if( !m_pResourceSystem->create() )
+		if( !m_pResourceSystem->create( "data" ) )
 		{
 			destroy();
 			return false;

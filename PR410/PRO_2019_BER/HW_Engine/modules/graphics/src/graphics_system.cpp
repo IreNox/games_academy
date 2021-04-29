@@ -1,8 +1,8 @@
-#include "Graphics.h"
+#include "hw/graphics/graphics_system.h"
 
 #include <d3dcompiler.h>
 
-namespace GA
+namespace hw
 {
 	static constexpr int	WindowWidth = 1280;
 	static constexpr int	WindowHeight = 720;
@@ -14,14 +14,14 @@ namespace GA
 		float		projection[ 4u ][ 4u ];
 	};
 
-	bool Graphics::initialize()
+	bool GraphicsSystem::create()
 	{
 		const HINSTANCE	hInstance = GetModuleHandle(nullptr);
 
 		WNDCLASSEXW windowClass = {};
 		windowClass.cbSize = sizeof(WNDCLASSEXW);
 		windowClass.hInstance = hInstance;
-		windowClass.lpfnWndProc = &Graphics::windowProc;
+		windowClass.lpfnWndProc = &GraphicsSystem::windowProc;
 		windowClass.lpszClassName = L"GAWindowClass";
 		windowClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
 		windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -103,21 +103,21 @@ namespace GA
 
 		if (FAILED(result))
 		{
-			shutdown();
+			destroy();
 			return false;
 		}
 
 		ID3D11Texture2D* pBackBuffer = nullptr;
 		if (FAILED(m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer)))
 		{
-			shutdown();
+			destroy();
 			return false;
 		}
 
 		if (FAILED(m_pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &m_pBackBufferView)))
 		{
 			pBackBuffer->Release();
-			shutdown();
+			destroy();
 			return false;
 		}
 
@@ -125,14 +125,14 @@ namespace GA
 
 		if (!createResources())
 		{
-			shutdown();
+			destroy();
 			return false;
 		}
 
 		return true;
 	}
 
-	void Graphics::shutdown()
+	void GraphicsSystem::destroy()
 	{
 		destroyResources();
 
@@ -167,7 +167,7 @@ namespace GA
 		}
 	}
 
-	void Graphics::update()
+	void GraphicsSystem::update()
 	{
 		MSG msg;
 		while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
@@ -177,7 +177,7 @@ namespace GA
 		}
 	}
 
-	ID3D11DeviceContext* Graphics::beginFrame( const float backgroundColor[ 4u ] )
+	ID3D11DeviceContext* GraphicsSystem::beginFrame( const float backgroundColor[ 4u ] )
 	{
 		D3D11_MAPPED_SUBRESOURCE mapData;
 		m_pContext->Map( m_pConstantBuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &mapData );
@@ -228,12 +228,12 @@ namespace GA
 		return m_pContext;
 	}
 
-	void Graphics::endFrame()
+	void GraphicsSystem::endFrame()
 	{
 		m_pSwapChain->Present(1, 0);
 	}
 
-	void Graphics::draw( const GameVertex* pVertives, UINT vertexCount )
+	void GraphicsSystem::draw( const GameVertex* pVertives, UINT vertexCount )
 	{
 		D3D11_MAPPED_SUBRESOURCE bufferData;
 		m_pContext->Map( m_pVertexBuffer, 0u, D3D11_MAP_WRITE_DISCARD, 0u, &bufferData );
@@ -249,7 +249,7 @@ namespace GA
 		m_pContext->Draw( vertexCount, 0u );
 	}
 
-	bool Graphics::createResources()
+	bool GraphicsSystem::createResources()
 	{
 		const char* pVertexShader = R"V0G0N(
 			struct VertexInput
@@ -368,7 +368,7 @@ namespace GA
 		return true;
 	}
 
-	void Graphics::destroyResources()
+	void GraphicsSystem::destroyResources()
 	{
 		if (m_pConstantBuffer != nullptr)
 		{
@@ -401,7 +401,7 @@ namespace GA
 		}
 	}
 
-	ID3DBlob* Graphics::compileShader(const char* pShaderText, const char* pTarget)
+	ID3DBlob* GraphicsSystem::compileShader(const char* pShaderText, const char* pTarget)
 	{
 		ID3DBlob* pShaderBlob = nullptr;
 		ID3DBlob* pErrorBlob = nullptr;
@@ -428,9 +428,9 @@ namespace GA
 		return pShaderBlob;
 	}
 
-	LRESULT CALLBACK Graphics::windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK GraphicsSystem::windowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		Graphics* pGraphics = (Graphics*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+		GraphicsSystem* pGraphics = (GraphicsSystem*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 		if (pGraphics != nullptr &&
 			pGraphics->handleMessage(message, wParam))
 		{
@@ -451,7 +451,7 @@ namespace GA
 		return 0;
 	}
 
-	bool Graphics::handleMessage(unsigned int messageCode, size_t wParam)
+	bool GraphicsSystem::handleMessage(unsigned int messageCode, size_t wParam)
 	{
 		switch (messageCode)
 		{

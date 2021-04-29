@@ -5,9 +5,9 @@
 struct IDirectInputA;
 struct IDirectInputDeviceA;
 
-namespace GA
+namespace hw
 {
-	class Graphics;
+	class GraphicsSystem;
 	struct InputState;
 
 	enum class InputMouseButton : uint8_t
@@ -62,11 +62,11 @@ namespace GA
 		Y
 	};
 
-	class Input
+	class InputSystem
 	{
 	public:
 
-		bool					create( Graphics& graphics );
+		bool					create( GraphicsSystem& graphics );
 		void					destroy();
 
 		void					update();
@@ -95,7 +95,7 @@ namespace GA
 
 	private:
 
-		Graphics*				m_pGraphics		= nullptr;
+		GraphicsSystem*			m_pGraphics		= nullptr;
 
 		IDirectInputA*			m_pInputDevice	= nullptr;
 		IDirectInputDeviceA*	m_pMouse		= nullptr;

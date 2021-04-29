@@ -1,6 +1,6 @@
-#include "Timer.h"
+#include "hw/core/timer.h"
 
-namespace GA
+namespace hw
 {
 	void Timer::create()
 	{

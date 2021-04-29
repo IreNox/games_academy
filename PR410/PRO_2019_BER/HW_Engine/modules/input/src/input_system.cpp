@@ -1,13 +1,13 @@
-#include "Input.h"
+#include "hw/input/input_system.h"
 
-#include "Graphics.h"
+#include "hw/graphics/graphics_system.h"
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
 #include <Xinput.h>
 
-namespace GA
+namespace hw
 {
 	static const uint8_t s_keyboardMapping[] =
 	{
@@ -37,7 +37,7 @@ namespace GA
 		uint8_t			currentKeyboardState[ 256u ];
 	};
 
-	bool Input::create( Graphics& graphics )
+	bool InputSystem::create( GraphicsSystem& graphics )
 	{
 		m_pGraphics	= &graphics;
 		m_pState	= new InputState();
@@ -89,7 +89,7 @@ namespace GA
 		return true;
 	}
 
-	void Input::destroy()
+	void InputSystem::destroy()
 	{
 		if( m_pState != nullptr )
 		{
@@ -120,7 +120,7 @@ namespace GA
 		}
 	}
 
-	void Input::update()
+	void InputSystem::update()
 	{
 		m_pState->lastMouseState = m_pState->currentMouseState;
 
@@ -150,67 +150,67 @@ namespace GA
 		XInputGetState( 0u, &m_pState->currentGamepadState );
 	}
 
-	float Input::getMouseDeltaX() const
+	float InputSystem::getMouseDeltaX() const
 	{
 		return float( m_pState->currentMouseState.lX );
 	}
 
-	float Input::getMouseDeltaY() const
+	float InputSystem::getMouseDeltaY() const
 	{
 		return float( m_pState->currentMouseState.lY );
 	}
 
-	float Input::getMousePositionX() const
+	float InputSystem::getMousePositionX() const
 	{
 		return float( m_pState->mousePosition.x );
 	}
 
-	float Input::getMousePositionY() const
+	float InputSystem::getMousePositionY() const
 	{
 		return float( m_pState->mousePosition.y );
 	}
 
-	bool Input::isMouseButtonDown( InputMouseButton button ) const
+	bool InputSystem::isMouseButtonDown( InputMouseButton button ) const
 	{
 		return m_pState->currentMouseState.rgbButtons[ (uint8_t)button ] != 0u;
 	}
 
-	bool Input::isMouseButtonUp( InputMouseButton button ) const
+	bool InputSystem::isMouseButtonUp( InputMouseButton button ) const
 	{
 		return m_pState->currentMouseState.rgbButtons[ (uint8_t)button ] == 0u;
 	}
 
-	bool Input::wasMouseButtonPressed( InputMouseButton button ) const
+	bool InputSystem::wasMouseButtonPressed( InputMouseButton button ) const
 	{
 		return m_pState->lastMouseState.rgbButtons[ (uint8_t)button ] == 0u && m_pState->currentMouseState.rgbButtons[ (uint8_t)button ] != 0u;
 	}
 
-	bool Input::wasMouseButtonReleased( InputMouseButton button ) const
+	bool InputSystem::wasMouseButtonReleased( InputMouseButton button ) const
 	{
 		return m_pState->lastMouseState.rgbButtons[ (uint8_t)button ] != 0u && m_pState->currentMouseState.rgbButtons[ (uint8_t)button ] == 0u;
 	}
 
-	bool Input::isKeyboardKeyDown( InputKeyboardKey key ) const
+	bool InputSystem::isKeyboardKeyDown( InputKeyboardKey key ) const
 	{
 		return (m_pState->currentKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) != 0u;
 	}
 
-	bool Input::isKeyboardKeyUp( InputKeyboardKey key ) const
+	bool InputSystem::isKeyboardKeyUp( InputKeyboardKey key ) const
 	{
 		return (m_pState->currentKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) == 0u;
 	}
 
-	bool Input::wasKeyboardKeyPressed( InputKeyboardKey key ) const
+	bool InputSystem::wasKeyboardKeyPressed( InputKeyboardKey key ) const
 	{
 		return (m_pState->currentKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) != 0u && (m_pState->lastKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) == 0u;
 	}
 
-	bool Input::wasKeyboardKeyReleased( InputKeyboardKey key ) const
+	bool InputSystem::wasKeyboardKeyReleased( InputKeyboardKey key ) const
 	{
 		return (m_pState->currentKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) == 0u && (m_pState->lastKeyboardState[ s_keyboardMapping[ (uint8_t)key ] ] & 0x80u) != 0u;
 	}
 
-	float Input::getGamepadAxis( InputGamepadAxis axis ) const
+	float InputSystem::getGamepadAxis( InputGamepadAxis axis ) const
 	{
 		SHORT value = 0;
 		SHORT deadZone = 0;
@@ -233,25 +233,25 @@ namespace GA
 		return float( value ) / maxValue;
 	}
 
-	bool Input::isGamepadButtonDown( InputGamepadButton button ) const
+	bool InputSystem::isGamepadButtonDown( InputGamepadButton button ) const
 	{
 		const DWORD buttonMask = 1u << (DWORD)button;
 		return (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) != 0u;
 	}
 
-	bool Input::isGamepadButtonUp( InputGamepadButton button ) const
+	bool InputSystem::isGamepadButtonUp( InputGamepadButton button ) const
 	{
 		const DWORD buttonMask = 1u << (DWORD)button;
 		return (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) == 0u;
 	}
 
-	bool Input::wasGamepadButtonPressed( InputGamepadButton button ) const
+	bool InputSystem::wasGamepadButtonPressed( InputGamepadButton button ) const
 	{
 		const DWORD buttonMask = 1u << (DWORD)button;
 		return  (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) != 0u && (m_pState->lastGamepadState.Gamepad.wButtons & buttonMask) == 0u;
 	}
 
-	bool Input::wasGamepadButtonReleased( InputGamepadButton button ) const
+	bool InputSystem::wasGamepadButtonReleased( InputGamepadButton button ) const
 	{
 		const DWORD buttonMask = 1u << (DWORD)button;
 		return  (m_pState->currentGamepadState.Gamepad.wButtons & buttonMask) == 0u && (m_pState->lastGamepadState.Gamepad.wButtons & buttonMask) != 0u;

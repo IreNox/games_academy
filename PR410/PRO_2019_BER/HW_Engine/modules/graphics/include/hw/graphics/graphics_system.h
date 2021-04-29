@@ -5,7 +5,7 @@
 
 #define ARRAY_COUNT( var ) (sizeof((var))/sizeof(*(var)))
 
-namespace GA
+namespace hw
 {
 	struct GameVertex
 	{
@@ -13,12 +13,12 @@ namespace GA
 		float	color[ 4u ];
 	};
 
-	class Graphics
+	class GraphicsSystem
 	{
 	public:
 
-		bool					initialize();
-		void					shutdown();
+		bool					create();
+		void					destroy();
 
 		void					update();
 
