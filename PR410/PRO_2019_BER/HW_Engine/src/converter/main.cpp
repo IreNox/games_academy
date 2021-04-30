@@ -8,7 +8,7 @@ namespace hw
 	{
 		ConverterSystem converter;
 
-		if( !converter.create() )
+		if( !converter.create( "E:\\Development\\games_academy\\PR410\\PRO_2019_BER\\HW_Engine\\resources\\" ) )
 		{
 			return 1;
 		}
@@ -20,6 +20,7 @@ namespace hw
 		converter.registerConverter( &textureConverter );
 
 		// TODO: iterate over all source files
+		converter.queueFile( "E:\\Development\\games_academy\\PR410\\PRO_2019_BER\\HW_Engine\\assets\\checker_rgb.png" );
 
 		if( !converter.convertAll() )
 		{

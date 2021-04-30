@@ -4,7 +4,7 @@ namespace hw
 {
 	ResourceTypeId TextureConverter::getTypeId()
 	{
-		return 0x54455854; // TEXT
+		return TextureResourceTypeId;
 	}
 
 	bool TextureConverter::convertResource( ConvertContext* pContext )

@@ -50,6 +50,11 @@ namespace hw
 			m_pFirst->pPrev = pElement;
 		}
 
+		if( m_pLast == nullptr )
+		{
+			m_pLast = pElement;
+		}
+
 		m_pFirst = pElement;
 		m_length++;
 	}
@@ -81,6 +86,11 @@ namespace hw
 		if( m_pLast != nullptr )
 		{
 			m_pLast->pNext = pElement;
+		}
+
+		if( m_pFirst == nullptr )
+		{
+			m_pFirst = pElement;
 		}
 
 		m_pLast = pElement;
@@ -126,5 +136,29 @@ namespace hw
 		pElement->pPrev = nullptr;
 		pElement->pNext = nullptr;
 		m_length--;
+	}
+
+	template<class T>
+	T* LinkedList<T>::getFirst()
+	{
+		return m_pFirst;
+	}
+
+	template<class T>
+	T* LinkedList<T>::getLast()
+	{
+		return m_pLast;
+	}
+
+	template<class T>
+	T* LinkedList<T>::getPrev( T* pElement )
+	{
+		return pElement->pPrev;
+	}
+
+	template<class T>
+	T* LinkedList<T>::getNext( T* pElement )
+	{
+		return pElement->pNext;
 	}
 }

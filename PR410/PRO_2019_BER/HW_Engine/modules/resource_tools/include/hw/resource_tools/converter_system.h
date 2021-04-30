@@ -21,7 +21,7 @@ namespace hw
 						ConverterSystem();
 						~ConverterSystem();
 
-		bool			create();
+		bool			create( const char* pOutputPath );
 		void			destroy();
 
 		void			registerConverter( ConverterBase* pConverter );
@@ -36,6 +36,8 @@ namespace hw
 		using ConverterList = LinkedList< ConverterBase >;
 		using FileList = LinkedList< ConverterFile >;
 
+		const char*		m_pOutputPath	= nullptr;
+
 		ConverterList	m_converters;
 		FileList		m_files;
 
@@ -43,5 +45,8 @@ namespace hw
 
 		ResourceTypeId	findResourceTypeForFile( const ConverterFile* pFile );
 		ConverterBase*	findConverterForFile( const ConverterFile* pFile );
+
+		bool			readSourceFile( ConverterFile* pFile );
+		bool			writeResourceData( ConverterFile* pFile );
 	};
 }

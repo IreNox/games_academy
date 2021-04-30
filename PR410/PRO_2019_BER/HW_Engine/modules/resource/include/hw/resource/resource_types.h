@@ -4,10 +4,13 @@
 
 namespace hw
 {
-	static constexpr uint32 ResourceFileMagic	= 0x48415755; // HAWU
+	static constexpr uint32 ResourceFileMagic	= 0x55574148; // HAWU
 	static constexpr uint32 ResourceFileVersion = 1u;
 
 	using ResourceTypeId = uint32;
+
+	static constexpr ResourceTypeId TextureResourceTypeId	= 0x54584554; // TEXT
+	static constexpr ResourceTypeId SoundResourceTypeId		= 0x4e554f53; // SOUN
 
 	struct ResourceFileHeader
 	{

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "hw/core/types.h"
+
 #include <windows.h>
 #include <d3d11.h>
 
@@ -26,6 +28,7 @@ namespace hw
 		void					endFrame();
 
 		void					draw( const GameVertex* pVertives, UINT vertexCount );
+		void					drawRect( float x, float y, float w, float h, uint32 color );
 
 		HWND					getHandle() { return m_windowHandle; }
 		bool					isOpen() { return m_isOpen; }

@@ -4,7 +4,7 @@ namespace hw
 {
 	ResourceTypeId SoundConverter::getTypeId()
 	{
-		return 0x534f554e; // SOUN
+		return SoundResourceTypeId;
 	}
 
 	bool SoundConverter::convertResource( ConvertContext* pContext )

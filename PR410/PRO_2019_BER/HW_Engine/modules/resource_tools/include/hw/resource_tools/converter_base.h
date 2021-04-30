@@ -20,7 +20,7 @@ namespace hw
 	class ConverterBase;
 	using ConverterBaseNode = LinkedListNode< ConverterBase >;
 
-	class ConverterBase : ConverterBaseNode
+	class ConverterBase : public ConverterBaseNode
 	{
 	public:
 

@@ -31,6 +31,11 @@ namespace hw
 
 		void		remove( T* pElement );
 
+		T*			getFirst();
+		T*			getLast();
+		T*			getNext( T* pElement );
+		T*			getPrev( T* pElement );
+
 	private:
 
 		T*			m_pFirst	= nullptr;

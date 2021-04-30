@@ -13,5 +13,9 @@ namespace hw
 
 		virtual void	update() override final;
 		virtual void	render() override final;
+
+	private:
+
+		Framework*		m_pFramework = nullptr;
 	};
 }

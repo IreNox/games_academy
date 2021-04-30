@@ -249,6 +249,39 @@ namespace hw
 		m_pContext->Draw( vertexCount, 0u );
 	}
 
+	void GraphicsSystem::drawRect(float x, float y, float w, float h, uint32 color)
+	{
+		const float cr = float((color >> 24u) & 0xff) / 255.0f;	// ffae00ff >> 24 = 000000ff & 0xff = 000000ff
+		const float cg = float((color >> 16u) & 0xff) / 255.0f;	// ffae00ff >> 16 = 0000ffae & 0xff = 000000ae
+		const float cb = float((color >> 8u) & 0xff) / 255.0f;	// ffae00ff >>  8 = 00ffae00 & 0xff = 00000000
+		const float ca = float((color >> 0u) & 0xff) / 255.0f;	// ffae00ff >>  0 = ffae00ff & 0xff = 000000ff
+
+		const float r = x + w;
+		const float b = y + h;
+		const GameVertex vertices[] =
+		{
+			// Triangle 1
+			// 0--1
+			//  \ |
+			//   \|
+			//    2
+			{ { x,	y,	0.0f }, { cr, cg, cb, ca } },
+			{ { r,	y,	0.0f }, { cr, cg, cb, ca } },
+			{ { r,	b,	0.0f }, { cr, cg, cb, ca } },
+
+			// Triangle 2
+			// 0
+			// |\
+			// | \
+			// 2--1
+			{ { x,	y,	0.0f }, { cr, cg, cb, ca } },
+			{ { r,	b,	0.0f }, { cr, cg, cb, ca } },
+			{ { x,	b,	0.0f }, { cr, cg, cb, ca } }
+		};
+
+		draw( vertices, ARRAY_COUNT( vertices ) );
+	}
+
 	bool GraphicsSystem::createResources()
 	{
 		const char* pVertexShader = R"V0G0N(
