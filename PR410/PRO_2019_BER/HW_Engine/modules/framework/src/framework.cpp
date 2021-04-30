@@ -39,8 +39,15 @@ namespace hw
 
 	bool Framework::create()
 	{
+		m_pResourceSystem = new ResourceSystem();
+		if (!m_pResourceSystem->create("E:\\Development\\games_academy\\PR410\\PRO_2019_BER\\HW_Engine\\resources\\"))
+		{
+			destroy();
+			return false;
+		}
+
 		m_pGraphicsSystem = new GraphicsSystem();
-		if( !m_pGraphicsSystem->create() )
+		if( !m_pGraphicsSystem->create( m_pResourceSystem ) )
 		{
 			destroy();
 			return false;
@@ -48,13 +55,6 @@ namespace hw
 
 		m_pInputSystem = new InputSystem();
 		if( !m_pInputSystem->create( *m_pGraphicsSystem ) )
-		{
-			destroy();
-			return false;
-		}
-
-		m_pResourceSystem = new ResourceSystem();
-		if( !m_pResourceSystem->create( "data" ) )
 		{
 			destroy();
 			return false;

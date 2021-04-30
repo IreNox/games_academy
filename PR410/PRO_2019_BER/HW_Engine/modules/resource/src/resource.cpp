@@ -10,12 +10,12 @@ namespace hw
 	{
 	}
 
-	bool Resource::create(const char* pName, const ResourceFileHeader& header, const void* pData, size_t dataSize)
+	bool Resource::create( const char* pName, const ResourceFileHeader& header, const void* pData, size_t dataSize, void* pContext )
 	{
 		m_pName = pName;
 		m_type	= header.typeId;
 
-		return handleCreate( pData, dataSize );
+		return handleCreate( pData, dataSize, pContext );
 	}
 
 	void Resource::destroy()

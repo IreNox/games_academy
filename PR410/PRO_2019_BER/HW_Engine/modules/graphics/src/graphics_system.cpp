@@ -1,5 +1,7 @@
 #include "hw/graphics/graphics_system.h"
 
+#include "hw/resource/resource_system.h"
+
 #include <d3dcompiler.h>
 
 namespace hw
@@ -14,7 +16,7 @@ namespace hw
 		float		projection[ 4u ][ 4u ];
 	};
 
-	bool GraphicsSystem::create()
+	bool GraphicsSystem::create( ResourceSystem* pResourceSystem )
 	{
 		const HINSTANCE	hInstance = GetModuleHandle(nullptr);
 
@@ -128,6 +130,9 @@ namespace hw
 			destroy();
 			return false;
 		}
+
+		m_resourceContext.pDevice = m_pDevice;
+		pResourceSystem->registerResourceType( TextureResourceTypeId, []() -> Resource* { return new TextureResource(); }, &m_resourceContext );
 
 		return true;
 	}

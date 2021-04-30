@@ -73,6 +73,11 @@ namespace hw
 			pNextElement->pPrev = nullptr;
 		}
 
+		if( pElement == m_pLast )
+		{
+			m_pLast = nullptr;
+		}
+
 		T* pElement = m_pFirst;
 		m_pFirst = pNextElement;
 		m_length--;
@@ -111,6 +116,11 @@ namespace hw
 			pPrevElement->pNext = nullptr;
 		}
 
+		if( pElement == m_pFirst )
+		{
+			m_pFirst = nullptr;
+		}
+
 		T* pElement = m_pLast;
 		m_pLast = pPrevElement;
 		m_length--;
@@ -131,6 +141,16 @@ namespace hw
 		if( pNextElement != nullptr )
 		{
 			pNextElement->pPrev = pElement->pPrev;
+		}
+
+		if( pElement == m_pFirst )
+		{
+			m_pFirst = pElement->pNext;
+		}
+
+		if( pElement == m_pLast )
+		{
+			m_pLast = pElement->pPrev;
 		}
 
 		pElement->pPrev = nullptr;

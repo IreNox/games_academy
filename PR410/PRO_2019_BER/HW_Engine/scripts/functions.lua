@@ -3,7 +3,7 @@ function setup_default_defines()
 	symbols "On"
 	
 	if os.target() == "windows" then
-		defines{ "HW_WINDOWS" }
+		defines{ "HW_WINDOWS", "_CRT_SECURE_NO_WARNINGS" }
 	end
 	
 	filter{ "configurations:Debug" }

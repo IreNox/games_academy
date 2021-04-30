@@ -8,14 +8,14 @@ namespace hw
 	class Resource;
 	using ResourceNode = LinkedListNode< Resource >;
 
-	class Resource : ResourceNode
+	class Resource : public ResourceNode
 	{
 	public:
 
 						Resource();
 		virtual			~Resource();
 
-		bool			create( const char* pName, const ResourceFileHeader& header, const void* pData, size_t dataSize );
+		bool			create( const char* pName, const ResourceFileHeader& header, const void* pData, size_t dataSize, void* pContext );
 		void			destroy();
 
 		const char*		getName() const { return m_pName; }
@@ -23,7 +23,7 @@ namespace hw
 
 	protected:
 
-		virtual bool	handleCreate(const void* pData, size_t dataSize) = 0;
+		virtual bool	handleCreate( const void* pData, size_t dataSize, void* pContext ) = 0;
 		virtual void	handleDestroy() = 0;
 
 	private:

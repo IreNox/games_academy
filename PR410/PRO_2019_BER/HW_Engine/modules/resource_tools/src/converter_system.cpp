@@ -180,7 +180,7 @@ namespace hw
 		header.magic	= ResourceFileMagic;
 		header.version	= ResourceFileVersion;
 		header.typeId	= pFile->context.typeId;
-		header.dataSize	= pFile->context.resourceDataSize;
+		header.dataSize	= (uint32)pFile->context.resourceDataSize;
 
 		fwrite( &header, sizeof( header ), 1u, pFileHandle );
 		fwrite( pFile->context.pResourceData, pFile->context.resourceDataSize, 1u, pFileHandle );

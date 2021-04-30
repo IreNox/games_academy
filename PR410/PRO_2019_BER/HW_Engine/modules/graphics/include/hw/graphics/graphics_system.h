@@ -2,6 +2,8 @@
 
 #include "hw/core/types.h"
 
+#include "hw/graphics/texture_resource.h"
+
 #include <windows.h>
 #include <d3d11.h>
 
@@ -9,6 +11,8 @@
 
 namespace hw
 {
+	class ResourceSystem;
+
 	struct GameVertex
 	{
 		float	position[ 3u ];
@@ -19,7 +23,7 @@ namespace hw
 	{
 	public:
 
-		bool					create();
+		bool					create( ResourceSystem* pResourceSystem );
 		void					destroy();
 
 		void					update();
@@ -63,6 +67,8 @@ namespace hw
 		ID3D11Buffer*			m_pVertexBuffer = nullptr;
 
 		ID3D11Buffer*			m_pConstantBuffer = nullptr;
+
+		TextureResourceContext	m_resourceContext;
 
 		bool					createResources();
 		void					destroyResources();
