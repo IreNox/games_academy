@@ -254,7 +254,7 @@ namespace hw
 		m_pContext->Draw( vertexCount, 0u );
 	}
 
-	void GraphicsSystem::drawRect(float x, float y, float w, float h, uint32 color)
+	void GraphicsSystem::drawRect( float x, float y, float w, float h, uint32 color, const TextureResource* pTexture )
 	{
 		const float cr = float((color >> 24u) & 0xff) / 255.0f;	// ffae00ff >> 24 = 000000ff & 0xff = 000000ff
 		const float cg = float((color >> 16u) & 0xff) / 255.0f;	// ffae00ff >> 16 = 0000ffae & 0xff = 000000ae
@@ -270,19 +270,23 @@ namespace hw
 			//  \ |
 			//   \|
 			//    2
-			{ { x,	y,	0.0f }, { cr, cg, cb, ca } },
-			{ { r,	y,	0.0f }, { cr, cg, cb, ca } },
-			{ { r,	b,	0.0f }, { cr, cg, cb, ca } },
+			{ { x,	y,	0.0f }, { cr, cg, cb, ca }, { 0.0f, 0.0f } },
+			{ { r,	y,	0.0f }, { cr, cg, cb, ca }, { 1.0f, 0.0f } },
+			{ { r,	b,	0.0f }, { cr, cg, cb, ca }, { 1.0f, 1.0f } },
 
 			// Triangle 2
 			// 0
 			// |\
 			// | \
 			// 2--1
-			{ { x,	y,	0.0f }, { cr, cg, cb, ca } },
-			{ { r,	b,	0.0f }, { cr, cg, cb, ca } },
-			{ { x,	b,	0.0f }, { cr, cg, cb, ca } }
+			{ { x,	y,	0.0f }, { cr, cg, cb, ca }, { 0.0f, 0.0f } },
+			{ { r,	b,	0.0f }, { cr, cg, cb, ca }, { 1.0f, 1.0f } },
+			{ { x,	b,	0.0f }, { cr, cg, cb, ca }, { 0.0f, 1.0f } }
 		};
+
+		ID3D11ShaderResourceView* pView = pTexture->getView();
+		m_pContext->PSSetShaderResources( 0u, 1u, &pView );
+		m_pContext->PSSetSamplers( 0u, 1u, &m_pSamplerState );
 
 		draw( vertices, ARRAY_COUNT( vertices ) );
 	}
@@ -294,12 +298,14 @@ namespace hw
 			{
 				float3	position	: POSITION0;
 				float4	color		: COLOR0;
+				float2	uv			: TEXCOORD0;
 			};
 
 			struct VertexToPixel
 			{
 				float4	position	: SV_POSITION0;
 				float4	color		: COLOR0;
+				float2	uv			: TEXCOORD0;
 			};
 
 			cbuffer constants : register(b0)
@@ -315,6 +321,7 @@ namespace hw
 				VertexToPixel output;
 				output.position	= position;
 				output.color	= input.color;
+				output.uv		= input.uv;
 
 				return output;
 			}
@@ -336,7 +343,8 @@ namespace hw
 		const D3D11_INPUT_ELEMENT_DESC inputElements[] =
 		{
 			{ "POSITION",	0u,	DXGI_FORMAT_R32G32B32_FLOAT,	0u,	D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u },
-			{ "COLOR",		0u, DXGI_FORMAT_R32G32B32A32_FLOAT,	0u, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u }
+			{ "COLOR",		0u, DXGI_FORMAT_R32G32B32A32_FLOAT,	0u, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u },
+			{ "TEXCOORD",	0u, DXGI_FORMAT_R32G32_FLOAT,		0u, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA,	0u }
 		};
 
 		result = m_pDevice->CreateInputLayout( inputElements, ARRAY_COUNT( inputElements ), pVertexShaderBlob->GetBufferPointer(), pVertexShaderBlob->GetBufferSize(), &m_pVertexLayout );
@@ -352,6 +360,7 @@ namespace hw
 			{
 				float4	position	: SV_POSITION0;
 				float4	color		: COLOR0;
+				float2	uv			: TEXCOORD0;
 			};
 
 			struct PixelOutput
@@ -359,10 +368,13 @@ namespace hw
 				float4	color		: SV_TARGET0;
 			};
 
+			Texture2D t_tex : register( t0 );
+			SamplerState s_linear : register( s0 );
+
 			PixelOutput main( VertexToPixel input )
 			{
 				PixelOutput output;
-				output.color = input.color;
+				output.color = input.color * t_tex.Sample( s_linear, input.uv );
 
 				return output;
 			}
@@ -403,11 +415,30 @@ namespace hw
 			return false;
 		}
 
+		D3D11_SAMPLER_DESC samplerDesc = {};
+		samplerDesc.MaxLOD			= D3D11_FLOAT32_MAX;
+		samplerDesc.MaxAnisotropy	= 16u;
+		samplerDesc.Filter			= D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU		= D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV		= D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW		= D3D11_TEXTURE_ADDRESS_CLAMP;
+
+		if( FAILED( m_pDevice->CreateSamplerState( &samplerDesc, &m_pSamplerState ) ) )
+		{
+			return false;
+		}
+
 		return true;
 	}
 
 	void GraphicsSystem::destroyResources()
 	{
+		if( m_pSamplerState != nullptr )
+		{
+			m_pSamplerState->Release();
+			m_pSamplerState = nullptr;
+		}
+
 		if (m_pConstantBuffer != nullptr)
 		{
 			m_pConstantBuffer->Release();

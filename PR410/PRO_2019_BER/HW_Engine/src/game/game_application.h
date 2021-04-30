@@ -4,7 +4,7 @@
 
 namespace hw
 {
-	class Resource;
+	class TextureResource;
 	struct ResourceLoadContext;
 
 	class GameApplication : public Application
@@ -22,6 +22,6 @@ namespace hw
 		Framework*				m_pFramework	= nullptr;
 
 		ResourceLoadContext*	m_pLoadContext	= nullptr;
-		const Resource*			m_pResource		= nullptr;
+		const TextureResource*	m_pTexture		= nullptr;
 	};
 }

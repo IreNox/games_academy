@@ -17,6 +17,7 @@ namespace hw
 	{
 		float	position[ 3u ];
 		float	color[ 4u ];
+		float	uv[ 2u ];
 	};
 
 	class GraphicsSystem
@@ -32,7 +33,7 @@ namespace hw
 		void					endFrame();
 
 		void					draw( const GameVertex* pVertives, UINT vertexCount );
-		void					drawRect( float x, float y, float w, float h, uint32 color );
+		void					drawRect( float x, float y, float w, float h, uint32 color, const TextureResource* pTexture );
 
 		HWND					getHandle() { return m_windowHandle; }
 		bool					isOpen() { return m_isOpen; }
@@ -67,6 +68,8 @@ namespace hw
 		ID3D11Buffer*			m_pVertexBuffer = nullptr;
 
 		ID3D11Buffer*			m_pConstantBuffer = nullptr;
+
+		ID3D11SamplerState*		m_pSamplerState = nullptr;
 
 		TextureResourceContext	m_resourceContext;
 
