@@ -21,12 +21,14 @@ namespace hw
 		const char*		getName() const { return m_pName; }
 		ResourceTypeId	getType() const { return m_type; }
 
+	protected:
+
+		virtual bool	handleCreate(const void* pData, size_t dataSize) = 0;
+		virtual void	handleDestroy() = 0;
+
 	private:
 
 		const char*		m_pName	= nullptr;
 		uint32			m_type	= 0;
-
-		virtual bool	handleCreate( const void* pData, size_t dataSize ) = 0;
-		virtual void	handleDestroy() = 0;
 	};
 }
