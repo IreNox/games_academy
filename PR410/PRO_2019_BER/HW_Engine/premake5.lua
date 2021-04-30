@@ -34,3 +34,5 @@ project( "HW_Converter" )
 	import_module( "core" )
 	import_module( "resource" )
 	import_module( "resource_tools" )
+	
+	import_third_party( "LodePNG" )
