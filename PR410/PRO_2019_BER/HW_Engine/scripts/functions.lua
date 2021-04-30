@@ -24,3 +24,8 @@ function import_module( name )
 	local module_path = "modules/" .. name .. "/" .. name .. ".lua"
 	dofile( module_path )
 end
+
+function import_third_party( name )
+	local module_path = "third_party/" .. name .. "/" .. name .. ".lua"
+	dofile( module_path )
+end
