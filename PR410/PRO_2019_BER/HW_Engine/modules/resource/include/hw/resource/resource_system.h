@@ -36,7 +36,7 @@ namespace hw
 		using ResourceList = LinkedList< Resource >;
 
 		const char*				m_pDataPath;
-		
+
 		LoadList				m_loadingResources;
 		ResourceList			m_resource;
 	};

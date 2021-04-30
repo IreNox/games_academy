@@ -4,7 +4,7 @@
 
 namespace hw
 {
-	class SoundConverter : ConverterBase
+	class SoundConverter : public ConverterBase
 	{
 	public:
 

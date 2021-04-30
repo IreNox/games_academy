@@ -14,4 +14,6 @@ namespace hw
 		virtual void	update() = 0;
 		virtual void	render() = 0;
 	};
+
+	Application& getApplication();
 }

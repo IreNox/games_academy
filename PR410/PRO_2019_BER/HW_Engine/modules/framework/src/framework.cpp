@@ -10,6 +10,8 @@ namespace hw
 {
 	int Framework::run()
 	{
+		m_pApplication = &getApplication();
+
 		if ( !create() )
 		{
 			return 1;
@@ -18,6 +20,11 @@ namespace hw
 		const float backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		while( m_pGraphicsSystem->isOpen() )
 		{
+			m_pGraphicsSystem->update();
+			m_pInputSystem->update();
+			m_pResourceSystem->update();
+			m_pSoundSystem->update();
+
 			m_pApplication->update();
 
 			m_pGraphicsSystem->beginFrame( backgroundColor );

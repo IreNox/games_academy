@@ -4,7 +4,7 @@
 
 namespace hw
 {
-	class TextureConverter : ConverterBase
+	class TextureConverter : public ConverterBase
 	{
 	public:
 

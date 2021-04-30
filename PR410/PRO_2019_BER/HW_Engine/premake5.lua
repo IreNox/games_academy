@@ -13,6 +13,7 @@ project( "HW_Engine" )
 	setup_default_defines()
 	
 	files{ "src/engine/*.h", "src/engine/*.cpp" }
+	files{ "src/game/*.h", "src/game/*.cpp" }
 	
 	import_module( "core" )
 	import_module( "graphics" )

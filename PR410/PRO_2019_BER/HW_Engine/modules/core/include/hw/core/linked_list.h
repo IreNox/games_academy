@@ -5,13 +5,15 @@ namespace hw
 	template<class T>
 	struct LinkedListNode
 	{
-		T*		pPrev;
-		T*		pNext;
+		T*		pPrev	= nullptr;
+		T*		pNext	= nullptr;
 	};
 
 	template<class T>
 	class LinkedList
 	{
+	public:
+
 					LinkedList();
 
 		bool		isEmpty() const;
@@ -21,18 +23,20 @@ namespace hw
 
 		void		reset();
 
-		void		pushFront( const T* pElement );
+		void		pushFront( T* pElement );
 		T*			popFront();
 
-		void		pushBack( const T* pElement);
+		void		pushBack( T* pElement);
 		T*			popBack();
 
 		void		remove( T* pElement );
 
 	private:
 
-		T*			m_pFirst;
-		T*			m_pLast;
-		size_t		m_length;
+		T*			m_pFirst	= nullptr;
+		T*			m_pLast		= nullptr;
+		size_t		m_length	= 0u;
 	};
 }
+
+#include "../../../src/linked_list.inl"

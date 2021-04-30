@@ -1,8 +1,9 @@
 #include "hw/framework/framework.h"
 
-int main()
+#include <Windows.h>
+
+int WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd )
 {
 	hw::Framework framework;
 	return framework.run();
 }
-
