@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="EntitySystem.cpp" />
+    <ClCompile Include="CollisionProgram.cpp">
+      <Filter>Programs</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerProgram.cpp">
+      <Filter>Programs</Filter>
+    </ClCompile>
+    <ClCompile Include="BallProgram.cpp">
+      <Filter>Programs</Filter>
+    </ClCompile>
+    <ClCompile Include="Hash.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="Transform.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Collision.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitySystem.h" />
+    <ClInclude Include="Ball.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderData.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkedList.h" />
+    <ClInclude Include="CollisionProgram.h">
+      <Filter>Programs</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerProgram.h">
+      <Filter>Programs</Filter>
+    </ClInclude>
+    <ClInclude Include="BallProgram.h">
+      <Filter>Programs</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h" />
+    <ClInclude Include="Hash.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Components">
+      <UniqueIdentifier>{0ff32cf5-926c-44e2-97d5-a7ca1e23f0d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Programs">
+      <UniqueIdentifier>{84fc3e68-af39-4339-9505-1091ec6c932e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LinkedList.inl" />
+    <None Include="Map.inl" />
+  </ItemGroup>
+</Project>
