@@ -4,7 +4,7 @@ namespace hw
 {
 	Thread::Thread()
 	{
-		AtomicStoreReleaxed( &m_isQuitRequested, 0u );
+		AtomicUInt32StoreReleaxed( &m_isQuitRequested, 0u );
 		m_pArgument	= nullptr;
 		m_handle	= NULL;
 	}
@@ -16,7 +16,7 @@ namespace hw
 
 	bool Thread::create( ThreadFunc threadFunc, void* pArgument )
 	{
-		AtomicStoreReleaxed( &m_isQuitRequested, 0u );
+		AtomicUInt32StoreReleaxed( &m_isQuitRequested, 0u );
 		m_pArgument		= pArgument;
 		m_pStartFunc	= threadFunc;
 
@@ -45,12 +45,12 @@ namespace hw
 
 	void Thread::requestQuit()
 	{
-		AtomicStoreReleaxed( &m_isQuitRequested, 1u );
+		AtomicUInt32StoreReleaxed( &m_isQuitRequested, 1u );
 	}
 
 	bool Thread::isQuitRequested() const
 	{
-		return AtomicLoadReleaxed( &m_isQuitRequested ) != 0u;
+		return AtomicUInt32LoadReleaxed( &m_isQuitRequested ) != 0u;
 	}
 
 	DWORD Thread::threadStart( LPVOID lpThreadParameter )
