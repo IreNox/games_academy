@@ -14,6 +14,7 @@ project( "HW_Engine" )
 	
 	files{ "src/engine/*.h", "src/engine/*.cpp" }
 	files{ "src/game/*.h", "src/game/*.cpp" }
+	files{ "src/test/*.h", "src/test/*.cpp" }
 	
 	import_module( "core" )
 	import_module( "graphics" )
@@ -22,6 +23,7 @@ project( "HW_Engine" )
 	import_module( "sound" )
 	import_module( "framework" )
 	import_module( "physic" )
+	import_module( "threading" )
 	
 project( "HW_Converter" )
 	kind( "ConsoleApp" )
