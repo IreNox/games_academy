@@ -55,7 +55,7 @@ namespace hw
 	template< class T >
 	bool SPMCQueue<T>::push( const T& value )
 	{
-		const uint64 bottom = AtomicUInt64LoadAcquire( &m_bottom ) & m_capacityMask;
+		const uint64 bottom = AtomicUInt64LoadAcquire( &m_bottom );
 		if( bottom + 1u == AtomicUInt64LoadReleaxed( &m_top ) )
 		{
 			// full
@@ -63,7 +63,6 @@ namespace hw
 		}
 
 		const uint64 bottomIndex = bottom & m_capacityMask;
-		assert( bottomIndex < m_capacity );
 		m_pData[ bottomIndex ] = value;
 		AtomicUInt64IncRelease( &m_bottom );
 
@@ -85,7 +84,7 @@ namespace hw
 			const uint64 topIndex = top & m_capacityMask;
 			target = m_pData[ topIndex ];
 
-			if( AtomicUInt64CompareStoreRelease( &m_top, top, top + 1u ) == top )
+			if( AtomicUInt64CompareStoreReleaxed( &m_top, top, top + 1u ) == top )
 			{
 				return true;
 			}

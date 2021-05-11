@@ -62,7 +62,7 @@ namespace hw
 
 		for( int i = 0u; i < 10000; ++i )
 		{
-			if( !data.queue.push( i ) )
+			while( !data.queue.push( i ) )
 			{
 				Sleep( 1u );
 			}

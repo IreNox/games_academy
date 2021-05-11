@@ -24,9 +24,9 @@ namespace hw
 
 		for( int i = 0u; i < 100000; ++i )
 		{
-			pData->mutex.lock();
+			MutexLock lock( pData->mutex );
+
 			pData->data.push_back( i );
-			pData->mutex.unlock();
 		}
 
 		return 0u;
@@ -42,9 +42,9 @@ namespace hw
 
 		for( int i = 0u; i < 100000; ++i )
 		{
-			data.mutex.lock();
+			MutexLock lock( data.mutex );
+
 			data.data.push_back( i );
-			data.mutex.unlock();
 		}
 	}
 

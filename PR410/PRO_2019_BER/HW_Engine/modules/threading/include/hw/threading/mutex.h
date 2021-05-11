@@ -19,4 +19,24 @@ namespace hw
 
 		CRITICAL_SECTION	m_mutex;
 	};
+
+	class MutexLock
+	{
+	public:
+
+		MutexLock( Mutex& mutex )
+			: m_mutex( mutex )
+		{
+			mutex.lock();
+		}
+
+		~MutexLock()
+		{
+			m_mutex.unlock();
+		}
+
+	private:
+
+		Mutex&		m_mutex;
+	};
 }
