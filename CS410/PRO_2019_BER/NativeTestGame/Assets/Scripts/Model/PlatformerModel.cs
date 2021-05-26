@@ -31,13 +31,7 @@ namespace Platformer.Model
         /// <summary>
         /// A global jump modifier applied to all initial jump velocities.
         /// </summary>
-        public float jumpModifier
-        {
-            get
-            {
-                return Native.getForce();
-            }
-        }
+        public float jumpModifier = 2.0f;
 
         /// <summary>
         /// A global jump modifier applied to slow down an active jump when
