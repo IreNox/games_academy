@@ -5,6 +5,7 @@ using Platformer.Gameplay;
 using static Platformer.Core.Simulation;
 using Platformer.Model;
 using Platformer.Core;
+using Assets.Scripts.Native;
 
 namespace Platformer.Mechanics
 {
@@ -55,10 +56,10 @@ namespace Platformer.Mechanics
         {
             if (controlEnabled)
             {
-                move.x = Input.GetAxis("Horizontal");
-                if (jumpState == JumpState.Grounded && Input.GetButtonDown("Jump"))
+                move.x = Native.getInputAxisHorizontal();
+                if (jumpState == JumpState.Grounded && Native.getInputJumpButtonDown())
                     jumpState = JumpState.PrepareToJump;
-                else if (Input.GetButtonUp("Jump"))
+                else if (Native.getInputJumpButtonUp())
                 {
                     stopJump = true;
                     Schedule<PlayerStopJump>().player = this;
