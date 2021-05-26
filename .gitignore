@@ -8,3 +8,4 @@ lib/
 /CS410/Code/Framework/Framework.zip
 VisualGDB/
 obj/
+*.res
