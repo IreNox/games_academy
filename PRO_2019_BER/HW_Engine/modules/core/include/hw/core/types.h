@@ -1,8 +1,21 @@
 #pragma once
 
+#define HW_ON	2
+#define HW_OFF	1
+
+#define HW_ENABLED( val ) ( ( 0 + val ) == 2 )
+#define HW_DISABLED( val ) ( ( 0 + val ) != 2 )
+
+#if defined( HW_WINDOWS )
+#	define HW_PLATFORM_WINDOWS	HW_ON
+#else
+#	define HW_PLATFORM_WINDOWS	HW_OFF
+#endif
+
 namespace hw
 {
-#if defined( HW_WINDOWS )
+
+#if HW_ENABLED( HW_PLATFORM_WINDOWS )
 	using uint8 = unsigned __int8;
 	using uint16 = unsigned __int16;
 	using uint32 = unsigned __int32;

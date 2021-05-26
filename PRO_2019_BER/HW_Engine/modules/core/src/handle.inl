@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 namespace hw
 {
 	template< class TTag, class TStorage, uint32 TIndexBits >
