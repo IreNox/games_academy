@@ -18,34 +18,36 @@ namespace hw
 		static Vector	unitZ;
 		static Vector	unitW;
 
-						Vector();
-		explicit		Vector( float xyzw );
-						Vector( float x, float y, float z, float w );
+		inline			Vector();
+		inline explicit	Vector( float xyzw );
+		inline			Vector( float x, float y, float z, float w );
 
-		bool			isZero( float epsilon = DefaultEpsilon ) const;
-		bool			isEqual( const Vector& rhs, float epsilon = DefaultEpsilon) const;
-		bool			isNormalized( float epsilon = DefaultEpsilon ) const;
+		inline bool		isZero( float epsilon = DefaultEpsilon ) const;
+		inline bool		isEqual( const Vector& rhs, float epsilon = DefaultEpsilon) const;
+		inline bool		isNormalized( float epsilon = DefaultEpsilon ) const;
 
-		float			getLength() const;
-		float			getDistance( const Vector& rhs ) const;
+		inline float	getLength() const;
+		inline float	getDistance( const Vector& rhs ) const;
 
-		float			dot( const Vector& rhs ) const;
-		Vector			cross( const Vector& rhs ) const;
-		Vector			reflect( const Vector& rhs ) const;
+		inline float	dot( const Vector& rhs ) const;
+		inline Vector	cross( const Vector& rhs ) const;
+		inline Vector	reflect( const Vector& rhs ) const;
 
-		Vector			negate() const;
-		Vector			normalize() const;
-		Vector			lerp(const Vector& rhs, float factor);
+		inline Vector	negate() const;
+		inline Vector	normalize() const;
+		inline Vector	lerp(const Vector& rhs, float factor);
 
-		Vector			operator+( const Vector& rhs ) const;
-		Vector			operator-( const Vector& rhs ) const;
-		Vector			operator/( const Vector& rhs ) const;
-		Vector			operator*( const Vector& rhs ) const;
+		inline Vector	operator+( const Vector& rhs ) const;
+		inline Vector	operator-( const Vector& rhs ) const;
+		inline Vector	operator/( const Vector& rhs ) const;
+		inline Vector	operator*( const Vector& rhs ) const;
 
-		Vector			operator/( float rhs ) const;
-		Vector			operator*( float rhs ) const;
+		inline Vector	operator/( float rhs ) const;
+		inline Vector	operator*( float rhs ) const;
 
-		Vector&			operator+=(const Vector& rhs) const;
-		Vector&			operator-=(const Vector& rhs) const;
+		inline Vector&	operator+=(const Vector& rhs) const;
+		inline Vector&	operator-=(const Vector& rhs) const;
 	};
 }
+
+#include "../../../src/vector.inl"
